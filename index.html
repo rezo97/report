@@ -10,23 +10,19 @@
 <body>
     <div class="container">
         <h2>📦 შეკვეთების კონტროლი</h2>
-
         <div class="upload-section">
             <div class="card">
                 <h3>1. ფაქტიური ჩაბარება</h3>
                 <p>სვეტები: order_id, time, date, courier</p>
                 <input type="file" id="actualFile" accept=".xlsx, .xls">
             </div>
-
             <div class="card">
                 <h3>2. მომხმარებლის მოთხოვნა</h3>
                 <p>სვეტები: order_id, requested_time, requested_date</p>
                 <input type="file" id="requestedFile" accept=".xlsx, .xls">
             </div>
         </div>
-
         <button id="processBtn" class="primary-btn">მონაცემების შედარება</button>
-
         <div class="table-container">
             <table id="resultsTable" style="display:none;">
                 <thead>
@@ -43,7 +39,6 @@
             </table>
         </div>
     </div>
-
     <script type="module" src="app.js"></script>
 </body>
 </html>
