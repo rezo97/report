@@ -59,8 +59,13 @@ function calculateStatus(reqD, reqT, actD, actT) {
 
 async function renderRow(id, cour, rInf, aInf, stat) {
     let comm = "";
-    const snap = await getDoc(doc(db, "order_comments", String(id)));
-    if (snap.exists()) comm = snap.data().text;
+    // დაცვის მექანიზმი: თუ Firebase არ მუშაობს, ცხრილი მაინც გამოიტანოს
+    try {
+        const snap = await getDoc(doc(db, "order_comments", String(id)));
+        if (snap.exists()) comm = snap.data().text;
+    } catch (error) {
+        console.log("ბაზა არ არის შექმნილი, მაგრამ ცხრილი აიტვირთება.");
+    }
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -73,6 +78,10 @@ async function renderRow(id, cour, rInf, aInf, stat) {
 
 window.saveComment = async (id) => {
     const txt = document.getElementById(`c-${id}`).value;
-    await setDoc(doc(db, "order_comments", String(id)), { text: txt });
-    alert("შენახულია!");
+    try {
+        await setDoc(doc(db, "order_comments", String(id)), { text: txt });
+        alert("შენახულია!");
+    } catch (error) {
+        alert("კომენტარი ვერ შეინახა. Firebase-ში შექმენი Firestore Database.");
+    }
 };
