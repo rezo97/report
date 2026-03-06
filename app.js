@@ -1,141 +1,101 @@
-<!DOCTYPE html>
-<html lang="ka">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>კურიერების მონიტორინგი</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-</head>
-<body>
-    <div class="container">
-        <h2>📦 შეკვეთების კონტროლი</h2>
+document.getElementById('actualFile').addEventListener('change', () => {
+    readExcel('actualFile', (data) => { actualData = data; console.log("ფაქტიური ჩაიტვირთა", data); });
+});
 
-        <div class="upload-section">
-            <div class="card">
-                <h3>1. ფაქტიური ჩაბარება</h3>
-                <p>სვეტები: order_id, time, date, courier</p>
-                <input type="file" id="actualFile" accept=".xlsx, .xls">
-            </div>
+document.getElementById('requestedFile').addEventListener('change', () => {
+    readExcel('requestedFile', (data) => { requestedData = data; console.log("მოთხოვნები ჩაიტვირთა", data); });
+});
 
-            <div class="card">
-                <h3>2. მომხმარებლის მოთხოვნა</h3>
-                <p>სვეტები: order_id, requested_time, requested_date</p>
-                <input type="file" id="requestedFile" accept=".xlsx, .xls">
-            </div>
-        </div>
+// მონაცემების დამუშავება
+document.getElementById('processBtn').addEventListener('click', async () => {
+    if (actualData.length === 0 || requestedData.length === 0) {
+        alert("გთხოვთ ატვირთოთ ორივე ფაილი!");
+        return;
+    }
 
-        <button id="processBtn" class="primary-btn">მონაცემების შედარება</button>
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = ''; // ცხრილის გასუფთავება ძველი მონაცემებისგან
 
-        <div class="table-container">
-            <table id="resultsTable" style="display:none;">
-                <thead>
-                    <tr>
-                        <th>შეკვეთის #</th>
-                        <th>კურიერი</th>
-                        <th>მოთხოვნილი დრო</th>
-                        <th>ფაქტიური დრო</th>
-                        <th>სტატუსი</th>
-                        <th>კომენტარი</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-    </div>
+    // მოთხოვნების ფაილზე გადავლა და ფაქტიურთან შედარება
+    for (const req of requestedData) {
+        const orderId = req.order_id;
+        const actual = actualData.find(a => a.order_id === orderId);
 
-    <script type="module" src="app.js"></script>
-</body>
-</html>
-2. style.css (დიზაინი)
-მარტივი და სუფთა დიზაინი, რომელიც სამუშაო პროცესს სასიამოვნოს ხდის.
+        if (actual) {
+            const status = calculateStatus(req.requested_date, req.requested_time, actual.date, actual.time);
+            await renderRow(orderId, actual.courier, req.requested_date + " " + req.requested_time, actual.date + " " + actual.time, status);
+        }
+    }
+    
+    document.getElementById('resultsTable').style.display = 'table';
+});
 
-CSS
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f7f6;
-    color: #333;
-    padding: 20px;
+// სტატუსის გამომთვლელი ლოგიკა
+function calculateStatus(reqDate, reqTimeRange, actDate, actTime) {
+    // თუ თარიღები არ ემთხვევა
+    if (reqDate !== actDate) return "გვიან";
+
+    // დროების შედარება (მაგ: "14:00-16:00" vs "15:30")
+    try {
+        let [start, end] = String(reqTimeRange).split('-');
+        let actInt = parseInt(String(actTime).replace(':', ''));
+        let startInt = parseInt(start.replace(':', ''));
+        let endInt = parseInt(end.replace(':', ''));
+
+        if (actInt >= startInt && actInt <= endInt) return "დროული";
+        if (actInt < startInt) return "ადრე";
+        if (actInt > endInt) return "გვიან";
+    } catch (e) {
+        return "შეცდომა ფორმატში";
+    }
+    return "უცნობი";
 }
 
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+// ცხრილში რიგის დამატება და Firebase-დან კომენტარის წამოღება
+async function renderRow(orderId, courier, reqInfo, actInfo, status) {
+    const tbody = document.getElementById('tableBody');
+    const tr = document.createElement('tr');
+    
+    // ვამოწმებთ, ხომ არ გვაქვს უკვე შენახული კომენტარი ბაზაში
+    let savedComment = "";
+    if (status === "ადრე" || status === "გვიან") {
+        const docRef = doc(db, "order_comments", String(orderId));
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            savedComment = docSnap.data().text;
+        }
+    }
+
+    let commentHtml = "";
+    if (status !== "დროული") {
+        commentHtml = `
+            <input type="text" class="comment-input" id="comment-${orderId}" value="${savedComment}" placeholder="მიზეზი...">
+            <button class="save-btn" onclick="saveComment('${orderId}')">შენახვა</button>
+        `;
+    }
+
+    tr.innerHTML = `
+        <td>${orderId}</td>
+        <td>${courier}</td>
+        <td>${reqInfo}</td>
+        <td>${actInfo}</td>
+        <td class="status-${status}">${status}</td>
+        <td>${commentHtml}</td>
+    `;
+    tbody.appendChild(tr);
 }
 
-h2 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 30px;
-}
-
-.upload-section {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.card {
-    flex: 1;
-    padding: 20px;
-    border: 2px dashed #bdc3c7;
-    border-radius: 8px;
-    background-color: #fafafa;
-}
-
-.card h3 { margin-top: 0; font-size: 16px; }
-.card p { font-size: 12px; color: #7f8c8d; }
-
-.primary-btn {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.primary-btn:hover { background-color: #2980b9; }
-
-.table-container { margin-top: 30px; overflow-x: auto; }
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th { background-color: #f8f9fa; }
-
-.status-დროული { color: #27ae60; font-weight: bold; }
-.status-ადრე { color: #f39c12; font-weight: bold; }
-.status-გვიან { color: #e74c3c; font-weight: bold; }
-
-.comment-input {
-    width: 70%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-}
-
-.save-btn {
-    padding: 5px 10px;
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-}
+// კომენტარის შენახვა Firebase-ში
+window.saveComment = async function(orderId) {
+    const commentText = document.getElementById(`comment-${orderId}`).value;
+    try {
+        await setDoc(doc(db, "order_comments", String(orderId)), {
+            text: commentText,
+            updatedAt: new Date()
+        });
+        alert(`კომენტარი შეკვეთისთვის ${orderId} შენახულია!`);
+    } catch (e) {
+        console.error("Error adding document: ", e);
+        alert("შეცდომა შენახვისას");
+    }
+};
