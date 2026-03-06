@@ -52,23 +52,21 @@ function calculateStatus(reqD, reqT, actD, actT) {
     try {
         let [s, e] = String(reqT).split('-');
         let a = parseInt(String(actT).replace(':', ''));
-        if (a >= parseInt(s.replace(':', '')) && a <= parseInt(e.replace(':', ''))) return "დროული";
-        return a < parseInt(s.replace(':', '')) ? "ადრე" : "გვიან";
+        if (a >= parseInt(s.trim().replace(':', '')) && a <= parseInt(e.trim().replace(':', ''))) return "დროული";
+        return a < parseInt(s.trim().replace(':', '')) ? "ადრე" : "გვიან";
     } catch { return "შეცდომა"; }
 }
 
 async function renderRow(id, cour, rInf, aInf, stat) {
     let comm = "";
-    if (stat !== "დროული") {
-        const snap = await getDoc(doc(db, "order_comments", String(id)));
-        if (snap.exists()) comm = snap.data().text;
-    }
+    const snap = await getDoc(doc(db, "order_comments", String(id)));
+    if (snap.exists()) comm = snap.data().text;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td>${id}</td><td>${cour}</td><td>${rInf}</td><td>${aInf}</td>
         <td class="status-${stat}">${stat}</td>
-        <td>${stat !== "დროული" ? `<input id="c-${id}" class="comment-input" value="${comm}"><button class="save-btn" onclick="saveComment('${id}')">OK</button>` : ''}</td>
+        <td><input id="c-${id}" class="comment-input" value="${comm}"><button class="save-btn" onclick="saveComment('${id}')">OK</button></td>
     `;
     document.getElementById('tableBody').appendChild(tr);
 }
