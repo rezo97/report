@@ -10,9 +10,12 @@
         .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
         .upload-section { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
-        .card { flex: 1; min-width: 300px; padding: 20px; border: 2px dashed #bdc3c7; border-radius: 8px; background: #fafafa; }
+        .card { flex: 1; min-width: 300px; padding: 20px; border: 2px dashed #bdc3c7; border-radius: 8px; background: #fafafa; position: relative; }
         h3 { margin-top: 0; font-size: 16px; }
-        p { font-size: 12px; color: #7f8c8d; }
+        p { font-size: 12px; color: #7f8c8d; margin-bottom: 15px; }
+        .template-link { font-size: 13px; color: #2980b9; cursor: pointer; text-decoration: underline; display: inline-block; margin-bottom: 15px; font-weight: bold; }
+        .template-link:hover { color: #1c5980; }
+        
         .btn { display: block; width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .btn:hover { background: #2980b9; }
         
@@ -47,12 +50,14 @@
         <div class="upload-section">
             <div class="card">
                 <h3>1. ფაქტიური ჩაბარება</h3>
-                <p>სვეტები: order_id, time, date, courier</p>
+                <span class="template-link" onclick="downloadTemplate('actual')">📥 შაბლონის გადმოწერა</span>
+                <br>
                 <input type="file" id="actualFile" accept=".xlsx, .xls">
             </div>
             <div class="card">
                 <h3>2. მომხმარებლის მოთხოვნა</h3>
-                <p>სვეტები: order_id, requested_time, requested_date</p>
+                <span class="template-link" onclick="downloadTemplate('requested')">📥 შაბლონის გადმოწერა</span>
+                <br>
                 <input type="file" id="requestedFile" accept=".xlsx, .xls">
             </div>
         </div>
@@ -72,7 +77,7 @@
                 <label class="filter-label"><input type="checkbox" id="chk-ontime" checked onchange="renderTable()"> დროული</label>
                 <label class="filter-label"><input type="checkbox" id="chk-early" checked onchange="renderTable()"> ადრე</label>
                 <label class="filter-label"><input type="checkbox" id="chk-late" checked onchange="renderTable()"> გვიან</label>
-                <button class="export-btn" onclick="exportExcel()">📥 ექსელში ჩამოტვირთვა</button>
+                <button class="export-btn" onclick="exportExcel()">📥 შედეგის ჩამოტვირთვა</button>
             </div>
         </div>
 
@@ -88,10 +93,26 @@
 
     <script>
         let actualData = [], requestedData = [];
-        let globalResults = []; // აქ შევინახავთ დამუშავებულ მონაცემებს
-        let filteredResults = []; // აქ შევინახავთ გაფილტრულ მონაცემებს
+        let globalResults = []; 
+        let filteredResults = []; 
 
-        // ექსელის წაკითხვა {raw: false} უზრუნველყოფს დროების ტექსტად წაკითხვას
+        // შაბლონების ჩამოსატვირთი ფუნქცია
+        window.downloadTemplate = function(type) {
+            let wsData = [];
+            let fileName = "";
+            if(type === 'actual') {
+                wsData = [["order_id", "time", "date", "courier"]];
+                fileName = "Template_Actual_Delivery.xlsx";
+            } else {
+                wsData = [["order_id", "requested_time", "requested_date"]];
+                fileName = "Template_User_Request.xlsx";
+            }
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "შაბლონი");
+            XLSX.writeFile(wb, fileName);
+        }
+
         function readExcel(fileId, callback) {
             const file = document.getElementById(fileId).files[0];
             if (!file) return;
@@ -129,7 +150,7 @@
                         act_info: `${actual.date} <br> ${actual.time}`,
                         status: status,
                         comment: savedComment,
-                        raw_req_info: `${req.requested_date} ${req.requested_time}`, // ექსელისთვის სუფთა ტექსტი
+                        raw_req_info: `${req.requested_date} ${req.requested_time}`, 
                         raw_act_info: `${actual.date} ${actual.time}`
                     });
                 }
@@ -145,7 +166,7 @@
             if (String(reqD) !== String(actD)) return "გვიან";
             try {
                 let [s, e] = String(reqT).split('-');
-                let actNum = parseInt(String(actT).replace(':', '').replace(/\D/g,'')); // ვასუფთავებთ ზედმეტი სიმბოლოებისგან
+                let actNum = parseInt(String(actT).replace(':', '').replace(/\D/g,''));
                 let startNum = parseInt(s.replace(':', '').replace(/\D/g,''));
                 let endNum = parseInt(e.replace(':', '').replace(/\D/g,''));
                 
@@ -177,7 +198,7 @@
                 if(item.status === 'დროული' && showOnTime) return true;
                 if(item.status === 'ადრე' && showEarly) return true;
                 if(item.status === 'გვიან' && showLate) return true;
-                if(item.status === 'ფორმატის შეცდომა') return true; // შეცდომები ყოველთვის გამოჩნდეს
+                if(item.status === 'ფორმატის შეცდომა') return true; 
                 return false;
             });
 
@@ -201,7 +222,6 @@
             });
         }
 
-        // დროებით ვინახავთ შეცვლილ კომენტარს მასივში ექსელისთვის
         window.updateTempComment = function(id, val) {
             const item = globalResults.find(i => String(i.order_id) === String(id));
             if(item) item.comment = val;
@@ -220,7 +240,6 @@
                 return;
             }
 
-            // ვქმნით მასივს ექსელისთვის
             const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი დრო/თარიღი", "ფაქტიური დრო/თარიღი", "სტატუსი", "კომენტარი"]];
             
             filteredResults.forEach(item => {
