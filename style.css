@@ -1,54 +1,78 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f4f7f6;
-    padding: 20px;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
+  authDomain: "report-8ef5e.firebaseapp.com",
+  projectId: "report-8ef5e",
+  storageBucket: "report-8ef5e.firebasestorage.app",
+  messagingSenderId: "468300071114",
+  appId: "1:468300071114:web:a010c0392ddea6a5733433",
+  measurementId: "G-T27CMMEG3F"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let actualData = [];
+let requestedData = [];
+
+function readExcel(fileElement, callback) {
+    const file = document.getElementById(fileElement).files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        callback(json);
+    };
+    reader.readAsArrayBuffer(file);
 }
 
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+document.getElementById('actualFile').onchange = () => readExcel('actualFile', (d) => actualData = d);
+document.getElementById('requestedFile').onchange = () => readExcel('requestedFile', (d) => requestedData = d);
+
+document.getElementById('processBtn').onclick = async () => {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    
+    for (const req of requestedData) {
+        const actual = actualData.find(a => String(a.order_id) === String(req.order_id));
+        if (actual) {
+            const status = calculateStatus(req.requested_date, req.requested_time, actual.date, actual.time);
+            await renderRow(req.order_id, actual.courier, `${req.requested_date} ${req.requested_time}`, `${actual.date} ${actual.time}`, status);
+        }
+    }
+    document.getElementById('resultsTable').style.display = 'table';
+};
+
+function calculateStatus(reqD, reqT, actD, actT) {
+    if (String(reqD) !== String(actD)) return "გვიან";
+    try {
+        let [s, e] = String(reqT).split('-');
+        let a = parseInt(String(actT).replace(':', ''));
+        if (a >= parseInt(s.trim().replace(':', '')) && a <= parseInt(e.trim().replace(':', ''))) return "დროული";
+        return a < parseInt(s.trim().replace(':', '')) ? "ადრე" : "გვიან";
+    } catch { return "შეცდომა"; }
 }
 
-h2 { text-align: center; color: #2c3e50; }
+async function renderRow(id, cour, rInf, aInf, stat) {
+    let comm = "";
+    const snap = await getDoc(doc(db, "order_comments", String(id)));
+    if (snap.exists()) comm = snap.data().text;
 
-.upload-section {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${id}</td><td>${cour}</td><td>${rInf}</td><td>${aInf}</td>
+        <td class="status-${stat}">${stat}</td>
+        <td><input id="c-${id}" class="comment-input" value="${comm}"><button class="save-btn" onclick="saveComment('${id}')">OK</button></td>
+    `;
+    document.getElementById('tableBody').appendChild(tr);
 }
 
-.card {
-    flex: 1;
-    padding: 20px;
-    border: 2px dashed #bdc3c7;
-    border-radius: 8px;
-}
-
-.primary-btn {
-    width: 100%;
-    padding: 15px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-}
-
-th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-
-.status-დროული { color: #27ae60; font-weight: bold; }
-.status-ადრე { color: #f39c12; font-weight: bold; }
-.status-გვიან { color: #e74c3c; font-weight: bold; }
-
-.comment-input { padding: 5px; border-radius: 3px; border: 1px solid #ccc; }
-.save-btn { padding: 5px; background: #2ecc71; color: white; border: none; cursor: pointer; }
+window.saveComment = async (id) => {
+    const txt = document.getElementById(`c-${id}`).value;
+    await setDoc(doc(db, "order_comments", String(id)), { text: txt });
+    alert("შენახულია!");
+};
