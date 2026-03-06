@@ -1,101 +1,80 @@
-document.getElementById('actualFile').addEventListener('change', () => {
-    readExcel('actualFile', (data) => { actualData = data; console.log("ფაქტიური ჩაიტვირთა", data); });
-});
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-document.getElementById('requestedFile').addEventListener('change', () => {
-    readExcel('requestedFile', (data) => { requestedData = data; console.log("მოთხოვნები ჩაიტვირთა", data); });
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
+  authDomain: "report-8ef5e.firebaseapp.com",
+  projectId: "report-8ef5e",
+  storageBucket: "report-8ef5e.firebasestorage.app",
+  messagingSenderId: "468300071114",
+  appId: "1:468300071114:web:a010c0392ddea6a5733433",
+  measurementId: "G-T27CMMEG3F"
+};
 
-// მონაცემების დამუშავება
-document.getElementById('processBtn').addEventListener('click', async () => {
-    if (actualData.length === 0 || requestedData.length === 0) {
-        alert("გთხოვთ ატვირთოთ ორივე ფაილი!");
-        return;
-    }
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
+let actualData = [];
+let requestedData = [];
+
+function readExcel(fileElement, callback) {
+    const file = document.getElementById(fileElement).files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        callback(json);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('actualFile').onchange = () => readExcel('actualFile', (d) => actualData = d);
+document.getElementById('requestedFile').onchange = () => readExcel('requestedFile', (d) => requestedData = d);
+
+document.getElementById('processBtn').onclick = async () => {
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = ''; // ცხრილის გასუფთავება ძველი მონაცემებისგან
-
-    // მოთხოვნების ფაილზე გადავლა და ფაქტიურთან შედარება
+    tbody.innerHTML = '';
+    
     for (const req of requestedData) {
-        const orderId = req.order_id;
-        const actual = actualData.find(a => a.order_id === orderId);
-
+        const actual = actualData.find(a => String(a.order_id) === String(req.order_id));
         if (actual) {
             const status = calculateStatus(req.requested_date, req.requested_time, actual.date, actual.time);
-            await renderRow(orderId, actual.courier, req.requested_date + " " + req.requested_time, actual.date + " " + actual.time, status);
+            await renderRow(req.order_id, actual.courier, `${req.requested_date} ${req.requested_time}`, `${actual.date} ${actual.time}`, status);
         }
     }
-    
     document.getElementById('resultsTable').style.display = 'table';
-});
+};
 
-// სტატუსის გამომთვლელი ლოგიკა
-function calculateStatus(reqDate, reqTimeRange, actDate, actTime) {
-    // თუ თარიღები არ ემთხვევა
-    if (reqDate !== actDate) return "გვიან";
-
-    // დროების შედარება (მაგ: "14:00-16:00" vs "15:30")
+function calculateStatus(reqD, reqT, actD, actT) {
+    if (String(reqD) !== String(actD)) return "გვიან";
     try {
-        let [start, end] = String(reqTimeRange).split('-');
-        let actInt = parseInt(String(actTime).replace(':', ''));
-        let startInt = parseInt(start.replace(':', ''));
-        let endInt = parseInt(end.replace(':', ''));
-
-        if (actInt >= startInt && actInt <= endInt) return "დროული";
-        if (actInt < startInt) return "ადრე";
-        if (actInt > endInt) return "გვიან";
-    } catch (e) {
-        return "შეცდომა ფორმატში";
-    }
-    return "უცნობი";
+        let [s, e] = String(reqT).split('-');
+        let a = parseInt(String(actT).replace(':', ''));
+        if (a >= parseInt(s.replace(':', '')) && a <= parseInt(e.replace(':', ''))) return "დროული";
+        return a < parseInt(s.replace(':', '')) ? "ადრე" : "გვიან";
+    } catch { return "შეცდომა"; }
 }
 
-// ცხრილში რიგის დამატება და Firebase-დან კომენტარის წამოღება
-async function renderRow(orderId, courier, reqInfo, actInfo, status) {
-    const tbody = document.getElementById('tableBody');
+async function renderRow(id, cour, rInf, aInf, stat) {
+    let comm = "";
+    if (stat !== "დროული") {
+        const snap = await getDoc(doc(db, "order_comments", String(id)));
+        if (snap.exists()) comm = snap.data().text;
+    }
+
     const tr = document.createElement('tr');
-    
-    // ვამოწმებთ, ხომ არ გვაქვს უკვე შენახული კომენტარი ბაზაში
-    let savedComment = "";
-    if (status === "ადრე" || status === "გვიან") {
-        const docRef = doc(db, "order_comments", String(orderId));
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            savedComment = docSnap.data().text;
-        }
-    }
-
-    let commentHtml = "";
-    if (status !== "დროული") {
-        commentHtml = `
-            <input type="text" class="comment-input" id="comment-${orderId}" value="${savedComment}" placeholder="მიზეზი...">
-            <button class="save-btn" onclick="saveComment('${orderId}')">შენახვა</button>
-        `;
-    }
-
     tr.innerHTML = `
-        <td>${orderId}</td>
-        <td>${courier}</td>
-        <td>${reqInfo}</td>
-        <td>${actInfo}</td>
-        <td class="status-${status}">${status}</td>
-        <td>${commentHtml}</td>
+        <td>${id}</td><td>${cour}</td><td>${rInf}</td><td>${aInf}</td>
+        <td class="status-${stat}">${stat}</td>
+        <td>${stat !== "დროული" ? `<input id="c-${id}" class="comment-input" value="${comm}"><button class="save-btn" onclick="saveComment('${id}')">OK</button>` : ''}</td>
     `;
-    tbody.appendChild(tr);
+    document.getElementById('tableBody').appendChild(tr);
 }
 
-// კომენტარის შენახვა Firebase-ში
-window.saveComment = async function(orderId) {
-    const commentText = document.getElementById(`comment-${orderId}`).value;
-    try {
-        await setDoc(doc(db, "order_comments", String(orderId)), {
-            text: commentText,
-            updatedAt: new Date()
-        });
-        alert(`კომენტარი შეკვეთისთვის ${orderId} შენახულია!`);
-    } catch (e) {
-        console.error("Error adding document: ", e);
-        alert("შეცდომა შენახვისას");
-    }
+window.saveComment = async (id) => {
+    const txt = document.getElementById(`c-${id}`).value;
+    await setDoc(doc(db, "order_comments", String(id)), { text: txt });
+    alert("შენახულია!");
 };
