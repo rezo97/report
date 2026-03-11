@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების კონტროლი (Cloud & History)</title>
+    <title>დიაპაზპმენოს კონტროლი</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -97,7 +97,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">📦 LogisticsHub</div>
+        <div class="nav-brand">📦 Dressiver Info</div>
         <div class="nav-links">
             <button class="nav-btn active" onclick="switchTab('upload')">ახალი რეპორტი</button>
             <button class="nav-btn" onclick="switchTab('history')">ისტორია ☁️</button>
@@ -110,7 +110,7 @@
             <h2 class="header-title">მონაცემების ატვირთვა</h2>
             <div class="upload-section">
                 <div class="card">
-                    <h3>Dressiver info</h3>
+                    <h3>Dressiver</h3>
                     <p>order_id, time, date, courier</p>
                     <div class="template-link" onclick="downloadTemplate('actual')">📥 შაბლონის გადმოწერა</div>
                     <input type="file" id="actualFile" accept=".xlsx, .xls">
@@ -178,7 +178,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>შეკვეთის #</th><th>კურიერი</th><th>მოთხოვნილი</th><th>ფაქტიური</th><th>სტატუსი</th><th>მართვა</th>
+                            <th>შეკვეთის #</th><th>კურიერი</th><th>მოთხოვნილი</th><th>ჩაბარების დრო</th><th>სტატუსი</th><th>მართვა</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -503,3 +503,4 @@
             document.getElementById('val-total').innerText = total;
             document.getElementById('val-ontime').innerHTML = `${((onTime/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${onTime})</span>`;
             document.getElementById('val-early').innerHTML = `${((early/total)*100).toFixed(1)}% <span
+
