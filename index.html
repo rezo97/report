@@ -17,6 +17,7 @@
             --success-bg: #d1fae5; --success-text: #065f46;
             --warning-bg: #fef3c7; --warning-text: #92400e;
             --danger-bg: #fee2e2;  --danger-text: #991b1b;
+            --tolerance-bg: #e0e7ff; --tolerance-text: #3730a3;
         }
 
         body { 
@@ -28,56 +29,36 @@
             line-height: 1.5;
         }
 
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         .header-title {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 40px;
-            letter-spacing: -0.5px;
+            text-align: center; font-size: 28px; font-weight: 800;
+            color: var(--text-main); margin-bottom: 40px; letter-spacing: -0.5px;
         }
 
-        /* ბარათების სექცია */
+        /* ბარათები */
         .upload-section { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 24px; 
-            margin-bottom: 24px; 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 24px; margin-bottom: 24px; 
         }
 
         .card { 
-            background: var(--card-bg); 
-            padding: 24px; 
-            border-radius: 16px; 
+            background: var(--card-bg); padding: 24px; border-radius: 16px; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            border: 1px solid var(--border-color);
-            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s;
         }
-        
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        }
-
-        .card h3 { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card h3 { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
         .card p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
         
         .template-link { 
-            font-size: 13px; color: var(--primary); cursor: pointer; 
-            text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;
-            padding: 6px 12px; background: #e0e7ff; border-radius: 6px; margin-bottom: 16px; transition: 0.2s;
+            font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600; 
+            display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; 
+            background: #e0e7ff; border-radius: 6px; margin-bottom: 16px; transition: 0.2s;
         }
         .template-link:hover { background: #c7d2fe; }
 
-        /* ფაილის ასატვირთი ველის სტილი */
-        input[type="file"] {
-            font-size: 14px; color: var(--text-muted); width: 100%;
-        }
+        input[type="file"] { font-size: 14px; color: var(--text-muted); width: 100%; }
         input[type="file"]::file-selector-button {
             border: 1px solid var(--border-color); background: #f9fafb; color: var(--text-main);
             padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500;
@@ -85,26 +66,20 @@
         }
         input[type="file"]::file-selector-button:hover { background: #f3f4f6; }
 
-        /* მთავარი ღილაკი */
         .btn-primary { 
             display: block; width: 100%; padding: 16px; background: var(--primary); 
             color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; 
-            cursor: pointer; transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
         }
         .btn-primary:hover { background: var(--primary-hover); }
-        .btn-primary:active { transform: scale(0.99); }
 
         /* დეშბორდი */
-        .dashboard-container { 
-            display: none; margin-top: 40px; animation: fadeIn 0.5s ease-in-out;
-        }
+        .dashboard-container { display: none; margin-top: 40px; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .stats-row { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; 
         }
-        
         .stat-card { 
             background: var(--card-bg); padding: 20px; border-radius: 12px; 
             box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 8px;
@@ -113,8 +88,9 @@
         .stat-card.ontime { border-left-color: #10b981; }
         .stat-card.early { border-left-color: #f59e0b; }
         .stat-card.late { border-left-color: #ef4444; }
+        .stat-card.tolerance { border-left-color: #6366f1; }
 
-        .stat-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+        .stat-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
         .stat-value { font-size: 24px; font-weight: 800; color: var(--text-main); }
 
         /* ფილტრები */
@@ -123,79 +99,72 @@
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
             box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); border: 1px solid var(--border-color); margin-bottom: 24px;
         }
+        .filters-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filter-label { font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         
-        .filters-group { display: flex; gap: 20px; align-items: center; }
-        .filter-label { font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none; }
-        .filter-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
-
         .btn-export { 
             padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; 
-            cursor: pointer; font-weight: 600; transition: 0.2s; display: flex; align-items: center; gap: 8px;
+            cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s;
         }
         .btn-export:hover { background: #059669; }
 
         /* ცხრილი */
         .table-wrapper {
-            background: var(--card-bg); border-radius: 16px; overflow: hidden;
+            background: var(--card-bg); border-radius: 16px; overflow-x: auto;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border-color);
             display: none;
         }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; }
         th { 
             background: #f9fafb; color: var(--text-muted); font-size: 12px; 
-            text-transform: uppercase; font-weight: 600; padding: 16px 24px; letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase; font-weight: 600; padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color); white-space: nowrap;
         }
-        td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 14px; }
-        tr:last-child td { border-bottom: none; }
+        td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 14px; }
         tr:hover { background: #f9fafb; }
 
-        /* სტატუსის ბეიჯები */
-        .badge { 
-            display: inline-flex; align-items: center; padding: 6px 12px; 
-            border-radius: 9999px; font-size: 12px; font-weight: 600; 
-        }
+        /* ბეიჯები */
+        .badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
         .badge-ontime { background: var(--success-bg); color: var(--success-text); }
         .badge-early { background: var(--warning-bg); color: var(--warning-text); }
         .badge-late { background: var(--danger-bg); color: var(--danger-text); }
+        .badge-tolerance { background: var(--tolerance-bg); color: var(--tolerance-text); }
 
-        /* კომენტარის ველი */
-        .comment-cell { display: flex; gap: 8px; }
+        /* ინტერაქტიული ველები ცხრილში */
+        .controls-cell { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .status-select {
+            padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-size: 13px; background: #fff; color: var(--text-main); cursor: pointer; outline: none;
+        }
+        .status-select:focus { border-color: var(--primary); }
         .comment-input { 
             padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; 
-            font-size: 13px; width: 160px; outline: none; transition: 0.2s; background: #f9fafb;
+            font-size: 13px; width: 140px; outline: none; background: #f9fafb;
         }
-        .comment-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .comment-input:focus { border-color: var(--primary); background: #fff; }
         .save-btn { 
             padding: 8px 16px; background: var(--bg-color); color: var(--text-main); 
-            border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; 
-            font-weight: 500; transition: 0.2s; font-size: 13px;
+            border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 500;
         }
         .save-btn:hover { background: #e5e7eb; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="header-title">📦 დიაპაზონების რეპორტი 🚚 </h2>
+        <h2 class="header-title">📦 დიაპაზონების რეპორტი 📦</h2>
         
         <div class="upload-section">
             <div class="card">
                 <h3>Dressiver info</h3>
                 <p>order_id, time, date, courier</p>
-                <div class="template-link" onclick="downloadTemplate('actual')">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    შაბლონის გადმოწერა
-                </div>
+                <div class="template-link" onclick="downloadTemplate('actual')">📥 შაბლონის გადმოწერა</div>
                 <input type="file" id="actualFile" accept=".xlsx, .xls">
             </div>
             
             <div class="card">
                 <h3>Prestashop info</h3>
                 <p>order_id, requested_time, requested_date</p>
-                <div class="template-link" onclick="downloadTemplate('requested')">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    შაბლონის გადმოწერა
-                </div>
+                <div class="template-link" onclick="downloadTemplate('requested')">📥 შაბლონის გადმოწერა</div>
                 <input type="file" id="requestedFile" accept=".xlsx, .xls">
             </div>
         </div>
@@ -220,6 +189,10 @@
                     <span class="stat-title">გვიან</span>
                     <span class="stat-value" id="val-late">0%</span>
                 </div>
+                <div class="stat-card tolerance">
+                    <span class="stat-title">15წთ დაშვება</span>
+                    <span class="stat-value" id="val-tolerance">0%</span>
+                </div>
             </div>
             
             <div class="filters-section">
@@ -228,11 +201,9 @@
                     <label class="filter-label"><input type="checkbox" id="chk-ontime" checked onchange="renderTable()"> დროული</label>
                     <label class="filter-label"><input type="checkbox" id="chk-early" checked onchange="renderTable()"> ადრე</label>
                     <label class="filter-label"><input type="checkbox" id="chk-late" checked onchange="renderTable()"> გვიან</label>
+                    <label class="filter-label"><input type="checkbox" id="chk-15min" checked onchange="renderTable()"> 15წთ დაშვება</label>
                 </div>
-                <button class="btn-export" onclick="exportExcel()">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    ექსპორტი
-                </button>
+                <button class="btn-export" onclick="exportExcel()">📥 ექსპორტი</button>
             </div>
         </div>
 
@@ -245,7 +216,7 @@
                         <th>მოთხოვნილი</th>
                         <th>ფაქტიური</th>
                         <th>სტატუსი</th>
-                        <th>კომენტარი</th>
+                        <th>მართვა და კომენტარი</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -259,19 +230,13 @@
         let filteredResults = []; 
 
         window.downloadTemplate = function(type) {
-            let wsData = [];
-            let fileName = "";
-            if(type === 'actual') {
-                wsData = [["order_id", "time", "date", "courier"]];
-                fileName = "Template_Actual_Delivery.xlsx";
-            } else {
-                wsData = [["order_id", "requested_time", "requested_date"]];
-                fileName = "Template_User_Request.xlsx";
-            }
+            let wsData = type === 'actual' 
+                ? [["order_id", "time", "date", "courier"]] 
+                : [["order_id", "requested_time", "requested_date"]];
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "შაბლონი");
-            XLSX.writeFile(wb, fileName);
+            XLSX.writeFile(wb, type === 'actual' ? "Actual_Delivery.xlsx" : "User_Request.xlsx");
         }
 
         function readExcel(fileId, callback) {
@@ -290,6 +255,36 @@
         document.getElementById('actualFile').addEventListener('change', () => readExcel('actualFile', d => actualData = d));
         document.getElementById('requestedFile').addEventListener('change', () => readExcel('requestedFile', d => requestedData = d));
 
+        // დროის წუთებში გადაყვანა კალკულაციისთვის
+        function timeToMins(t) {
+            if(!t) return 0;
+            let parts = String(t).split(':');
+            let h = parseInt(parts[0]) || 0;
+            let m = parseInt(parts[1]) || 0;
+            return (h * 60) + m;
+        }
+
+        function calcStatus(reqD, reqT, actD, actT) {
+            let rDate = String(reqD).split(' ')[0];
+            let aDate = String(actD).split(' ')[0];
+            if (rDate !== aDate) return "გვიან";
+
+            try {
+                let [s, e] = String(reqT).split('-');
+                let startMins = timeToMins(s.trim());
+                let endMins = timeToMins(e.trim());
+                let actMins = timeToMins(String(actT).trim().split(' ')[0]);
+                
+                if (actMins >= startMins && actMins <= endMins) return "დროული";
+                
+                // 15 წუთიანი დაშვების ლოგიკა
+                if (actMins < startMins && (startMins - actMins) <= 15) return "15წთ ცდომილება";
+                if (actMins > endMins && (actMins - endMins) <= 15) return "15წთ ცდომილება";
+
+                return actMins < startMins ? "ადრე" : "გვიან";
+            } catch { return "შეცდომა"; }
+        }
+
         window.processData = function() {
             if(!actualData.length || !requestedData.length) {
                 alert("გთხოვთ ატვირთოთ ორივე ფაილი მონაცემების შესადარებლად.");
@@ -301,7 +296,9 @@
             requestedData.forEach(req => {
                 const actual = actualData.find(a => String(a.order_id) === String(req.order_id));
                 if(actual) {
-                    const status = calcStatus(req.requested_date, req.requested_time, actual.date, actual.time);
+                    const autoStatus = calcStatus(req.requested_date, req.requested_time, actual.date, actual.time);
+                    const savedOverride = localStorage.getItem('status_override_' + req.order_id);
+                    const finalStatus = savedOverride ? savedOverride : autoStatus;
                     const savedComment = localStorage.getItem('comment_' + req.order_id) || '';
                     
                     globalResults.push({
@@ -309,7 +306,8 @@
                         courier: actual.courier || '-',
                         req_info: `<div style="font-weight: 500;">${req.requested_date}</div><div style="color: var(--text-muted); font-size: 12px;">${req.requested_time}</div>`,
                         act_info: `<div style="font-weight: 500;">${actual.date}</div><div style="color: var(--text-muted); font-size: 12px;">${actual.time}</div>`,
-                        status: status,
+                        auto_status: autoStatus,
+                        status: finalStatus,
                         comment: savedComment,
                         raw_req_info: `${req.requested_date} ${req.requested_time}`, 
                         raw_act_info: `${actual.date} ${actual.time}`
@@ -323,19 +321,6 @@
             document.getElementById('resultsTable').style.display = 'block';
         }
 
-        function calcStatus(reqD, reqT, actD, actT) {
-            if (String(reqD) !== String(actD)) return "გვიან";
-            try {
-                let [s, e] = String(reqT).split('-');
-                let actNum = parseInt(String(actT).replace(':', '').replace(/\D/g,''));
-                let startNum = parseInt(s.replace(':', '').replace(/\D/g,''));
-                let endNum = parseInt(e.replace(':', '').replace(/\D/g,''));
-                
-                if (actNum >= startNum && actNum <= endNum) return "დროული";
-                return actNum < startNum ? "ადრე" : "გვიან";
-            } catch { return "შეცდომა"; }
-        }
-
         function updateDashboard() {
             const total = globalResults.length;
             if(total === 0) return;
@@ -343,17 +328,20 @@
             const onTime = globalResults.filter(i => i.status === 'დროული').length;
             const early = globalResults.filter(i => i.status === 'ადრე').length;
             const late = globalResults.filter(i => i.status === 'გვიან').length;
+            const tol15 = globalResults.filter(i => i.status === '15წთ ცდომილება').length;
 
             document.getElementById('val-total').innerText = total;
             document.getElementById('val-ontime').innerHTML = `${((onTime/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${onTime})</span>`;
             document.getElementById('val-early').innerHTML = `${((early/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${early})</span>`;
             document.getElementById('val-late').innerHTML = `${((late/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${late})</span>`;
+            document.getElementById('val-tolerance').innerHTML = `${((tol15/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${tol15})</span>`;
         }
 
         function getBadgeHtml(status) {
             if (status === 'დროული') return '<span class="badge badge-ontime">დროული</span>';
             if (status === 'ადრე') return '<span class="badge badge-early">ადრე</span>';
             if (status === 'გვიან') return '<span class="badge badge-late">გვიან</span>';
+            if (status === '15წთ ცდომილება') return '<span class="badge badge-tolerance">15წთ დაშვება</span>';
             return `<span class="badge" style="background:#e5e7eb; color:#374151;">${status}</span>`;
         }
 
@@ -361,11 +349,13 @@
             const showOnTime = document.getElementById('chk-ontime').checked;
             const showEarly = document.getElementById('chk-early').checked;
             const showLate = document.getElementById('chk-late').checked;
+            const show15min = document.getElementById('chk-15min').checked;
 
             filteredResults = globalResults.filter(item => {
                 if(item.status === 'დროული' && showOnTime) return true;
                 if(item.status === 'ადრე' && showEarly) return true;
                 if(item.status === 'გვიან' && showLate) return true;
+                if(item.status === '15წთ ცდომილება' && show15min) return true;
                 if(item.status === 'შეცდომა') return true; 
                 return false;
             });
@@ -374,6 +364,8 @@
             tbody.innerHTML = '';
             
             filteredResults.forEach(item => {
+                const isOverridden = localStorage.getItem('status_override_' + item.order_id);
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight: 500;">${item.order_id}</td>
@@ -382,9 +374,16 @@
                     <td>${item.act_info}</td>
                     <td>${getBadgeHtml(item.status)}</td>
                     <td>
-                        <div class="comment-cell">
+                        <div class="controls-cell">
+                            <select class="status-select" onchange="overrideStatus('${item.order_id}', this.value)">
+                                <option value="" ${!isOverridden ? 'selected' : ''}>ავტომატური</option>
+                                <option value="დროული" ${item.status === 'დროული' && isOverridden ? 'selected' : ''}>დროულად ჩაბარდა</option>
+                                <option value="ადრე" ${item.status === 'ადრე' && isOverridden ? 'selected' : ''}>ადრე ჩაბარდა</option>
+                                <option value="გვიან" ${item.status === 'გვიან' && isOverridden ? 'selected' : ''}>გვიან ჩაბარდა</option>
+                                <option value="15წთ ცდომილება" ${item.status === '15წთ ცდომილება' && isOverridden ? 'selected' : ''}>15წთ დაშვება</option>
+                            </select>
                             <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment}" placeholder="მიზეზი..." onchange="updateTempComment('${item.order_id}', this.value)">
-                            <button class="save-btn" onclick="saveComment('${item.order_id}')">შენახვა</button>
+                            <button class="save-btn" onclick="saveComment('${item.order_id}', this)">✔ შენახვა</button>
                         </div>
                     </td>
                 `;
@@ -392,29 +391,43 @@
             });
         }
 
+        // სტატუსის ხელით გადაწერის ლოგიკა
+        window.overrideStatus = function(id, newStatus) {
+            if(newStatus === "") {
+                localStorage.removeItem('status_override_' + id);
+            } else {
+                localStorage.setItem('status_override_' + id, newStatus);
+            }
+            
+            const item = globalResults.find(i => String(i.order_id) === String(id));
+            if(item) {
+                item.status = newStatus === "" ? item.auto_status : newStatus;
+            }
+            updateDashboard();
+            renderTable();
+        }
+
         window.updateTempComment = function(id, val) {
             const item = globalResults.find(i => String(i.order_id) === String(id));
             if(item) item.comment = val;
         }
 
-        window.saveComment = function(id) {
+        window.saveComment = function(id, btnElement) {
             const val = document.getElementById('c-' + id).value;
             localStorage.setItem('comment_' + id, val);
             updateTempComment(id, val);
             
-            // ვიზუალური დადასტურება ღილაკზე
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "✔";
-            btn.style.background = "#d1fae5";
-            btn.style.borderColor = "#10b981";
-            btn.style.color = "#065f46";
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "✔ წარმატებით";
+            btnElement.style.background = "#d1fae5";
+            btnElement.style.borderColor = "#10b981";
+            btnElement.style.color = "#065f46";
             
             setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = "";
-                btn.style.borderColor = "";
-                btn.style.color = "";
+                btnElement.innerText = originalText;
+                btnElement.style.background = "";
+                btnElement.style.borderColor = "";
+                btnElement.style.color = "";
             }, 1500);
         }
 
@@ -423,20 +436,10 @@
                 alert("მონაცემები არაა საჩვენებლად!");
                 return;
             }
-
             const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი დრო/თარიღი", "ფაქტიური დრო/თარიღი", "სტატუსი", "კომენტარი"]];
-            
             filteredResults.forEach(item => {
-                wsData.push([
-                    item.order_id, 
-                    item.courier, 
-                    item.raw_req_info, 
-                    item.raw_act_info, 
-                    item.status, 
-                    item.comment
-                ]);
+                wsData.push([item.order_id, item.courier, item.raw_req_info, item.raw_act_info, item.status, item.comment]);
             });
-
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "შედეგები");
@@ -445,6 +448,3 @@
     </script>
 </body>
 </html>
-
-
-
