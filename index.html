@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების კონტროლი (Cloud & History)</title>
+    <title>დიაპაზონების კონტროლი</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -97,7 +97,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">📦 LogisticsHub</div>
+        <div class="nav-brand">📦 Dressiver info</div>
         <div class="nav-links">
             <button class="nav-btn active" onclick="switchTab('upload')">ახალი რეპორტი</button>
             <button class="nav-btn" onclick="switchTab('history')">ისტორია ☁️</button>
@@ -110,13 +110,13 @@
             <h2 class="header-title">მონაცემების ატვირთვა</h2>
             <div class="upload-section">
                 <div class="card">
-                    <h3>ფაქტიური ჩაბარება (Dressiver)</h3>
+                    <h3>Dressiver</h3>
                     <p>order_id, time, date, courier</p>
                     <div class="template-link" onclick="downloadTemplate('actual')">📥 შაბლონის გადმოწერა</div>
                     <input type="file" id="actualFile" accept=".xlsx, .xls">
                 </div>
                 <div class="card">
-                    <h3>მოთხოვნა (Prestashop)</h3>
+                    <h3>Prestashop</h3>
                     <p>order_id, requested_time, requested_date</p>
                     <div class="template-link" onclick="downloadTemplate('requested')">📥 შაბლონის გადმოწერა</div>
                     <input type="file" id="requestedFile" accept=".xlsx, .xls">
@@ -586,3 +586,4 @@
     </script>
 </body>
 </html>
+
