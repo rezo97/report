@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების კონტროლი (Cloud Sync)</title>
+    <title>შეკვეთების კონტროლი (Cloud & History)</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -16,131 +16,150 @@
             --tolerance-bg: #e0e7ff; --tolerance-text: #3730a3;
         }
 
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 30px 20px; margin: 0; line-height: 1.5; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header-title { text-align: center; font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 40px; letter-spacing: -0.5px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 0; margin: 0; line-height: 1.5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
         
-        /* ბარათები */
+        /* ნავიგაცია */
+        .navbar { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .nav-brand { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .nav-links { display: flex; gap: 15px; }
+        .nav-btn { padding: 8px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 15px; }
+        .nav-btn:hover { background: var(--bg-color); color: var(--text-main); }
+        .nav-btn.active { background: #e0e7ff; color: var(--primary); }
+
+        /* სექციების კონტროლი */
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ატვირთვის გვერდი */
+        .header-title { text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 30px; }
         .upload-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px; }
-        .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); transition: 0.2s; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .card h3 { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; }
         .card p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
-        .template-link { font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #e0e7ff; border-radius: 6px; margin-bottom: 16px; transition: 0.2s; }
-        .template-link:hover { background: #c7d2fe; }
-
-        input[type="file"] { font-size: 14px; color: var(--text-muted); width: 100%; }
-        input[type="file"]::file-selector-button { border: 1px solid var(--border-color); background: #f9fafb; color: var(--text-main); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; margin-right: 12px; transition: 0.2s; }
-        input[type="file"]::file-selector-button:hover { background: #f3f4f6; }
-
-        .btn-primary { display: block; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-primary:hover { background: var(--primary-hover); }
+        .template-link { font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600; display: inline-flex; padding: 6px 12px; background: #e0e7ff; border-radius: 6px; margin-bottom: 16px; }
+        input[type="file"] { font-size: 14px; width: 100%; }
+        input[type="file"]::file-selector-button { border: 1px solid var(--border-color); background: #f9fafb; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; margin-right: 12px; }
+        .btn-primary { display: block; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
         .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
 
-        /* დეშბორდი */
-        .dashboard-container { display: none; margin-top: 40px; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ისტორიის გვერდი */
+        .history-list { display: flex; flex-direction: column; gap: 12px; }
+        .history-item { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .history-item:hover { border-color: var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .history-date { font-weight: 700; font-size: 16px; color: var(--text-main); }
+        .history-stats { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+        .open-report-btn { padding: 8px 16px; background: #e0e7ff; color: var(--primary); border: none; border-radius: 8px; font-weight: 600; pointer-events: none; }
+
+        /* დეშბორდი და ცხრილი */
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border-color); border-left: 4px solid var(--text-muted); }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--text-muted); display: flex; flex-direction: column; gap: 8px; }
         .stat-card.ontime { border-left-color: #10b981; } .stat-card.early { border-left-color: #f59e0b; } .stat-card.late { border-left-color: #ef4444; } .stat-card.tolerance { border-left-color: #6366f1; }
         .stat-title { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-        .stat-value { font-size: 24px; font-weight: 800; color: var(--text-main); }
-
-        /* ფილტრები */
-        .filters-section { background: var(--card-bg); padding: 16px 24px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); border: 1px solid var(--border-color); margin-bottom: 24px; }
+        .stat-value { font-size: 24px; font-weight: 800; }
+        
+        .filters-section { background: var(--card-bg); padding: 16px 24px; border-radius: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; border: 1px solid var(--border-color); margin-bottom: 24px; }
         .filters-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .filter-label { font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-export { padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-export:hover { background: #059669; }
-
-        /* ცხრილი */
-        .table-wrapper { background: var(--card-bg); border-radius: 16px; overflow-x: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border-color); display: none; }
+        .btn-export { padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        
+        .table-wrapper { background: var(--card-bg); border-radius: 16px; overflow-x: auto; border: 1px solid var(--border-color); }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 900px; }
-        th { background: #f9fafb; color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; padding: 16px 20px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 14px; }
+        th { background: #f9fafb; color: var(--text-muted); font-size: 12px; text-transform: uppercase; padding: 16px 20px; border-bottom: 1px solid var(--border-color); }
+        td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         tr:hover { background: #f9fafb; }
 
-        /* ბეიჯები */
-        .badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+        .badge { display: inline-flex; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
         .badge-ontime { background: var(--success-bg); color: var(--success-text); }
         .badge-early { background: var(--warning-bg); color: var(--warning-text); }
         .badge-late { background: var(--danger-bg); color: var(--danger-text); }
         .badge-tolerance { background: var(--tolerance-bg); color: var(--tolerance-text); }
 
-        /* ინტერაქტიული ველები */
-        .controls-cell { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .status-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: #fff; color: var(--text-main); cursor: pointer; outline: none; }
-        .comment-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 140px; outline: none; background: #f9fafb; }
-        .save-btn { padding: 8px 16px; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .controls-cell { display: flex; gap: 8px; align-items: center; }
+        .status-select { padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+        .comment-input { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 130px; outline: none; }
+        .save-btn { padding: 6px 12px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 500; }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-brand">📦 LogisticsHub</div>
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="switchTab('upload')">ახალი რეპორტი</button>
+            <button class="nav-btn" onclick="switchTab('history')">ისტორია ☁️</button>
+        </div>
+    </nav>
+
     <div class="container">
-        <h2 class="header-title">📦 დიაპაზონების რეპორტი (Cloud Sync ☁️)</h2>
         
-        <div class="upload-section">
-            <div class="card">
-                <h3>ფაქტიური ჩაბარება</h3>
-                <p>order_id, time, date, courier</p>
-                <div class="template-link" onclick="downloadTemplate('actual')">📥 შაბლონის გადმოწერა</div>
-                <input type="file" id="actualFile" accept=".xlsx, .xls">
+        <div id="uploadView" class="view-section active">
+            <h2 class="header-title">მონაცემების ატვირთვა</h2>
+            <div class="upload-section">
+                <div class="card">
+                    <h3>Dressiver info</h3>
+                    <p>order_id, time, date, courier</p>
+                    <div class="template-link" onclick="downloadTemplate('actual')">📥 შაბლონის გადმოწერა</div>
+                    <input type="file" id="actualFile" accept=".xlsx, .xls">
+                </div>
+                <div class="card">
+                    <h3>Prestashop Info</h3>
+                    <p>order_id, requested_time, requested_date</p>
+                    <div class="template-link" onclick="downloadTemplate('requested')">📥 შაბლონის გადმოწერა</div>
+                    <input type="file" id="requestedFile" accept=".xlsx, .xls">
+                </div>
             </div>
-            <div class="card">
-                <h3>მომხმარებლის მოთხოვნა</h3>
-                <p>order_id, requested_time, requested_date</p>
-                <div class="template-link" onclick="downloadTemplate('requested')">📥 შაბლონის გადმოწერა</div>
-                <input type="file" id="requestedFile" accept=".xlsx, .xls">
+            <button class="btn-primary" id="processBtn">მონაცემების სინქრონიზაცია და რეპორტის შექმნა</button>
+        </div>
+
+        <div id="historyView" class="view-section">
+            <h2 class="header-title">წინა რეპორტები</h2>
+            <div class="history-list" id="historyListContainer">
+                <p style="text-align:center; color:#6b7280;">იტვირთება Cloud-დან...</p>
             </div>
         </div>
-        
-        <button class="btn-primary" id="processBtn">მონაცემების სინქრონიზაცია და შედარება</button>
 
-        <div id="dashboardArea" class="dashboard-container">
+        <div id="reportView" class="view-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="reportTitle" style="margin: 0; font-weight: 800;">რეპორტი</h2>
+                <button class="nav-btn" style="background: #e5e7eb;" onclick="switchTab('history')">🔙 უკან დაბრუნება</button>
+            </div>
+
             <div class="stats-row">
-                <div class="stat-card">
-                    <span class="stat-title">სულ შეკვეთა</span><span class="stat-value" id="val-total">0</span>
-                </div>
-                <div class="stat-card ontime">
-                    <span class="stat-title">დროული</span><span class="stat-value" id="val-ontime">0%</span>
-                </div>
-                <div class="stat-card early">
-                    <span class="stat-title">ადრე</span><span class="stat-value" id="val-early">0%</span>
-                </div>
-                <div class="stat-card late">
-                    <span class="stat-title">გვიან</span><span class="stat-value" id="val-late">0%</span>
-                </div>
-                <div class="stat-card tolerance">
-                    <span class="stat-title">15წთ დაშვება</span><span class="stat-value" id="val-tolerance">0%</span>
-                </div>
+                <div class="stat-card"><span class="stat-title">სულ</span><span class="stat-value" id="val-total">0</span></div>
+                <div class="stat-card ontime"><span class="stat-title">დროული</span><span class="stat-value" id="val-ontime">0%</span></div>
+                <div class="stat-card early"><span class="stat-title">ადრე</span><span class="stat-value" id="val-early">0%</span></div>
+                <div class="stat-card late"><span class="stat-title">გვიან</span><span class="stat-value" id="val-late">0%</span></div>
+                <div class="stat-card tolerance"><span class="stat-title">15წთ დაშვება</span><span class="stat-value" id="val-tolerance">0%</span></div>
             </div>
             
             <div class="filters-section">
                 <div class="filters-group">
-                    <span style="font-size: 14px; color: var(--text-muted); font-weight: 600;">ფილტრი:</span>
-                    <label class="filter-label"><input type="checkbox" id="chk-ontime" checked onchange="renderTable()"> დროული</label>
-                    <label class="filter-label"><input type="checkbox" id="chk-early" checked onchange="renderTable()"> ადრე</label>
-                    <label class="filter-label"><input type="checkbox" id="chk-late" checked onchange="renderTable()"> გვიან</label>
-                    <label class="filter-label"><input type="checkbox" id="chk-15min" checked onchange="renderTable()"> 15წთ დაშვება</label>
+                    <strong>ფილტრი:</strong>
+                    <label><input type="checkbox" id="chk-ontime" checked onchange="renderTable()"> დროული</label>
+                    <label><input type="checkbox" id="chk-early" checked onchange="renderTable()"> ადრე</label>
+                    <label><input type="checkbox" id="chk-late" checked onchange="renderTable()"> გვიან</label>
+                    <label><input type="checkbox" id="chk-15min" checked onchange="renderTable()"> 15წთ</label>
                 </div>
                 <button class="btn-export" onclick="exportExcel()">📥 ექსპორტი</button>
             </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>შეკვეთის #</th><th>კურიერი</th><th>მოთხოვნილი</th><th>ფაქტიური</th><th>სტატუსი</th><th>მართვა</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="table-wrapper" id="resultsTable">
-            <table>
-                <thead>
-                    <tr>
-                        <th>შეკვეთის #</th><th>კურიერი</th><th>მოთხოვნილი</th><th>ფაქტიური</th><th>სტატუსი</th><th>მართვა და კომენტარი</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
@@ -155,15 +174,27 @@
         const db = getFirestore(app);
 
         let actualData = [], requestedData = [];
+        window.currentReportId = null; // რომელი რეპორტია ღია ამჟამად
         window.globalResults = []; 
         window.filteredResults = []; 
+
+        // ტაბების გადართვა
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName + 'View').classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            if(tabName === 'history') loadHistory();
+        }
 
         window.downloadTemplate = function(type) {
             let wsData = type === 'actual' ? [["order_id", "time", "date", "courier"]] : [["order_id", "requested_time", "requested_date"]];
             const ws = window.XLSX.utils.aoa_to_sheet(wsData);
             const wb = window.XLSX.utils.book_new();
             window.XLSX.utils.book_append_sheet(wb, ws, "შაბლონი");
-            window.XLSX.writeFile(wb, type === 'actual' ? "Actual_Delivery.xlsx" : "User_Request.xlsx");
+            window.XLSX.writeFile(wb, type === 'actual' ? "Dressiver_Info.xlsx" : "Prestashop_Info.xlsx");
         }
 
         function readExcel(fileId, callback) {
@@ -200,54 +231,114 @@
             } catch { return "შეცდომა"; }
         }
 
-        // შედარების ღილაკზე დაჭერისას ბაზიდან მონაცემების სინქრონიზაცია
+        // 1. ახალი რეპორტის შექმნა და Cloud-ში შენახვა
         document.getElementById('processBtn').addEventListener('click', async () => {
             if(!actualData.length || !requestedData.length) { alert("გთხოვთ ატვირთოთ ორივე ფაილი."); return; }
             
             const btn = document.getElementById('processBtn');
-            const origText = btn.innerText;
-            btn.innerText = "⏳ სინქრონიზაცია Cloud-თან...";
+            btn.innerText = "⏳ ინახება Cloud-ში...";
             btn.disabled = true;
 
-            // 1. ბაზიდან ვიწერთ ყველა შენახულ კომენტარს/სტატუსს
-            let cloudData = {};
-            try {
-                const snapshot = await getDocs(collection(db, "order_metadata"));
-                snapshot.forEach(doc => { cloudData[doc.id] = doc.data(); });
-            } catch (error) {
-                console.error("Firebase Error:", error);
-                alert("Cloud სინქრონიზაცია ვერ მოხერხდა (ვმუშაობთ ოფლაინში).");
-            }
-
-            window.globalResults = [];
+            let reportDataArray = [];
             
-            // 2. ვადარებთ და ვამატებთ Cloud-ის მონაცემებს
             requestedData.forEach(req => {
                 const actual = actualData.find(a => String(a.order_id) === String(req.order_id));
                 if(actual) {
-                    const autoStatus = calcStatus(req.requested_date, req.requested_time, actual.date, actual.time);
-                    
-                    const savedMeta = cloudData[String(req.order_id)] || {};
-                    const finalStatus = savedMeta.status_override ? savedMeta.status_override : autoStatus;
-                    const savedComment = savedMeta.comment || '';
-                    
-                    window.globalResults.push({
+                    const status = calcStatus(req.requested_date, req.requested_time, actual.date, actual.time);
+                    reportDataArray.push({
                         order_id: req.order_id, courier: actual.courier || '-',
-                        req_info: `<div style="font-weight: 500;">${req.requested_date}</div><div style="color: var(--text-muted); font-size: 12px;">${req.requested_time}</div>`,
-                        act_info: `<div style="font-weight: 500;">${actual.date}</div><div style="color: var(--text-muted); font-size: 12px;">${actual.time}</div>`,
-                        auto_status: autoStatus, status: finalStatus, comment: savedComment,
+                        req_info: `<div style="font-weight:500;">${req.requested_date}</div><div style="color:#6b7280; font-size:12px;">${req.requested_time}</div>`,
+                        act_info: `<div style="font-weight:500;">${actual.date}</div><div style="color:#6b7280; font-size:12px;">${actual.time}</div>`,
+                        auto_status: status, status: status, comment: '',
                         raw_req_info: `${req.requested_date} ${req.requested_time}`, raw_act_info: `${actual.date} ${actual.time}`
                     });
                 }
             });
 
-            btn.innerText = origText;
+            // ვქმნით უნიკალურ ID-ს დროის მიხედვით
+            const reportId = Date.now().toString();
+            const reportObj = {
+                id: reportId,
+                dateStr: new Date().toLocaleString('ka-GE'),
+                timestamp: Date.now(),
+                total: reportDataArray.length,
+                data: reportDataArray
+            };
+
+            try {
+                await setDoc(doc(db, "reports", reportId), reportObj);
+                alert("რეპორტი წარმატებით აიტვირთა Cloud-ში!");
+                
+                // ვხსნით პირდაპირ ამ რეპორტს
+                window.currentReportId = reportId;
+                window.globalResults = reportDataArray;
+                
+                document.getElementById('reportTitle').innerText = `რეპორტი: ${reportObj.dateStr}`;
+                
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                document.getElementById('reportView').classList.add('active');
+                
+                window.updateDashboard();
+                window.renderTable();
+            } catch (error) {
+                console.error(error);
+                alert("შეცდომა ბაზაში შენახვისას. შეამოწმეთ Firebase Rules.");
+            }
+
+            btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა";
             btn.disabled = false;
+        });
+
+        // 2. ისტორიის ჩამოტვირთვა ბაზიდან
+        async function loadHistory() {
+            const container = document.getElementById('historyListContainer');
+            container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "reports"));
+                let reports = [];
+                querySnapshot.forEach((doc) => { reports.push(doc.data()); });
+                
+                // ვალაგებთ ახლიდან ძველისკენ
+                reports.sort((a, b) => b.timestamp - a.timestamp);
+
+                if(reports.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">ისტორია ცარიელია.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                reports.forEach(rep => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.onclick = () => openReportFromHistory(rep);
+                    item.innerHTML = `
+                        <div>
+                            <div class="history-date">📅 ${rep.dateStr}</div>
+                            <div class="history-stats">შეკვეთების რაოდენობა: ${rep.total}</div>
+                        </div>
+                        <button class="open-report-btn">გახსნა</button>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>';
+            }
+        }
+
+        // 3. ისტორიიდან რეპორტის გახსნა
+        function openReportFromHistory(reportObj) {
+            window.currentReportId = reportObj.id;
+            window.globalResults = reportObj.data;
+            document.getElementById('reportTitle').innerText = `რეპორტი: ${reportObj.dateStr}`;
+            
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('reportView').classList.add('active');
+            
             window.updateDashboard();
             window.renderTable();
-            document.getElementById('dashboardArea').style.display = 'block';
-            document.getElementById('resultsTable').style.display = 'block';
-        });
+        }
 
         window.updateDashboard = function() {
             const total = window.globalResults.length;
@@ -258,10 +349,10 @@
             const tol15 = window.globalResults.filter(i => i.status === '15წთ ცდომილება').length;
 
             document.getElementById('val-total').innerText = total;
-            document.getElementById('val-ontime').innerHTML = `${((onTime/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${onTime})</span>`;
-            document.getElementById('val-early').innerHTML = `${((early/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${early})</span>`;
-            document.getElementById('val-late').innerHTML = `${((late/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${late})</span>`;
-            document.getElementById('val-tolerance').innerHTML = `${((tol15/total)*100).toFixed(1)}% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(${tol15})</span>`;
+            document.getElementById('val-ontime').innerHTML = `${((onTime/total)*100).toFixed(1)}% <span style="font-size:12px; color:#6b7280;">(${onTime})</span>`;
+            document.getElementById('val-early').innerHTML = `${((early/total)*100).toFixed(1)}% <span style="font-size:12px; color:#6b7280;">(${early})</span>`;
+            document.getElementById('val-late').innerHTML = `${((late/total)*100).toFixed(1)}% <span style="font-size:12px; color:#6b7280;">(${late})</span>`;
+            document.getElementById('val-tolerance').innerHTML = `${((tol15/total)*100).toFixed(1)}% <span style="font-size:12px; color:#6b7280;">(${tol15})</span>`;
         }
 
         function getBadgeHtml(status) {
@@ -291,7 +382,7 @@
             tbody.innerHTML = '';
             
             window.filteredResults.forEach(item => {
-                const isOverridden = item.status !== item.auto_status; // მარტივი შემოწმება ხელით შეცვლილზე
+                const isOverridden = item.status !== item.auto_status;
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -309,8 +400,8 @@
                                 <option value="გვიან" ${item.status === 'გვიან' && isOverridden ? 'selected' : ''}>გვიან</option>
                                 <option value="15წთ ცდომილება" ${item.status === '15წთ ცდომილება' && isOverridden ? 'selected' : ''}>15წთ დაშვება</option>
                             </select>
-                            <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment}" placeholder="მიზეზი..." onchange="updateTempComment('${item.order_id}', this.value)">
-                            <button class="save-btn" onclick="saveComment('${item.order_id}', this)">შენახვა</button>
+                            <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment}" placeholder="კომენტარი..." onchange="updateTempComment('${item.order_id}', this.value)">
+                            <button class="save-btn" onclick="saveComment('${item.order_id}', this)">✔</button>
                         </div>
                     </td>
                 `;
@@ -323,42 +414,49 @@
             if(item) item.comment = val;
         }
 
-        // Cloud-ში სტატუსის ხელით გადაწერა (merge: true უზრუნველყოფს რომ კომენტარი არ წაიშალოს)
-        window.overrideStatus = async function(id, newStatus) {
-            const item = window.globalResults.find(i => String(i.order_id) === String(id));
-            if(item) item.status = newStatus === "" ? item.auto_status : newStatus;
-            window.updateDashboard();
-            window.renderTable();
-
+        // 4. ცვლილებების (სტატუსი/კომენტარი) შენახვა კონკრეტულ რეპორტში Cloud-ში
+        async function updateCloudReport() {
+            if(!window.currentReportId) return;
             try {
-                await setDoc(doc(db, "order_metadata", String(id)), { status_override: newStatus }, { merge: true });
-            } catch (e) { console.error("Cloud Update Error:", e); }
+                // ვაახლებთ მთლიან data მასივს ამ რეპორტისთვის
+                await updateDoc(doc(db, "reports", window.currentReportId), {
+                    data: window.globalResults
+                });
+            } catch (error) {
+                console.error("Update Error:", error);
+            }
         }
 
-        // Cloud-ში კომენტარის შენახვა
+        window.overrideStatus = async function(id, newStatus) {
+            const item = window.globalResults.find(i => String(i.order_id) === String(id));
+            if(item) {
+                item.status = newStatus === "" ? item.auto_status : newStatus;
+                window.updateDashboard();
+                window.renderTable();
+                await updateCloudReport(); // ვინახავთ Cloud-ში ეგრევე
+            }
+        }
+
         window.saveComment = async function(id, btnElement) {
             const val = document.getElementById('c-' + id).value;
             window.updateTempComment(id, val);
             
             const originalText = btnElement.innerText;
-            btnElement.innerText = "⏳...";
+            btnElement.innerText = "⏳";
             
-            try {
-                await setDoc(doc(db, "order_metadata", String(id)), { comment: val }, { merge: true });
-                btnElement.innerText = "✔ ინახება...";
-                btnElement.style.background = "#d1fae5";
-                btnElement.style.borderColor = "#10b981";
-                btnElement.style.color = "#065f46";
-            } catch (error) {
-                btnElement.innerText = "❌ შეცდომა";
-            }
+            await updateCloudReport(); // ვინახავთ Cloud-ში
+            
+            btnElement.innerText = "✔";
+            btnElement.style.background = "#d1fae5";
+            btnElement.style.borderColor = "#10b981";
+            btnElement.style.color = "#065f46";
 
             setTimeout(() => {
                 btnElement.innerText = originalText;
                 btnElement.style.background = "";
                 btnElement.style.borderColor = "";
                 btnElement.style.color = "";
-            }, 1500);
+            }, 1000);
         }
 
         window.exportExcel = function() {
