@@ -579,12 +579,13 @@
 
         window.exportExcel = function() {
             if(window.filteredResults.length === 0) return alert("მონაცემები არაა საჩვენებლად!");
-            const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი", "ფაქტიური", "სტატუსი", "კომენტარი"]];
+            const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი", "ჩაბარების დრო", "სტატუსი", "კომენტარი"]];
             window.filteredResults.forEach(item => wsData.push([item.order_id, item.courier, item.raw_req_info, item.raw_act_info, item.status, item.comment]));
             window.XLSX.writeFile(window.XLSX.utils.book_append_sheet(window.XLSX.utils.book_new(), window.XLSX.utils.aoa_to_sheet(wsData), "შედეგები"), "Courier_Report.xlsx");
         }
     </script>
 </body>
 </html>
+
 
 
