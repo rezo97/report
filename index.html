@@ -19,6 +19,7 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 0; margin: 0; line-height: 1.5; }
         .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
         
+        /* ნავიგაცია */
         .navbar { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .nav-brand { font-size: 20px; font-weight: 800; color: var(--primary); }
         .nav-links { display: flex; gap: 15px; }
@@ -30,6 +31,7 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* ატვირთვა */
         .header-title { text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 30px; }
         .upload-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px; }
         .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
@@ -46,6 +48,7 @@
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
+        /* ისტორიის ქარდები */
         .history-list { display: flex; flex-direction: column; gap: 16px; }
         .history-item { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .history-item:hover { border-color: #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
@@ -59,7 +62,10 @@
         .rep-comment-input:focus { border-color: var(--primary); background: #fff; }
         .open-report-btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .open-report-btn:hover { background: var(--primary-hover); }
+        .delete-btn { padding: 10px 15px; background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .delete-btn:hover { background: #fca5a5; }
 
+        /* დეშბორდი და ცხრილი */
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--text-muted); display: flex; flex-direction: column; gap: 8px; }
         .stat-card.ontime { border-left-color: #10b981; } .stat-card.early { border-left-color: #f59e0b; } .stat-card.late { border-left-color: #ef4444; } .stat-card.tolerance { border-left-color: #6366f1; }
@@ -183,21 +189,16 @@
 
     <script>
         window.switchTab = function(tabName) {
-            // ვასუფთავებთ ძველ აქტიურ ტაბებს
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            
-            // ვააქტიურებთ ახალს
             document.getElementById(tabName + 'View').classList.add('active');
             
-            // ვიზუალურად ვნიშნავთ ღილაკს
             if(event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             } else {
                 document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
             }
 
-            // თუ ისტორიის ტაბზე გადავედით და Firebase მზადაა, ვტვირთავთ ისტორიას
             if(tabName === 'history' && typeof window.loadHistory === 'function') {
                 window.loadHistory();
             }
@@ -206,7 +207,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
@@ -294,7 +295,7 @@
                 });
 
                 if(newRequestedData.length === 0) {
-                    alert(`ატვირთული ყველა შეკვეთა (${duplicateCount}) უკვე ბაზაშია!\nახალი რეპორტი არ შეიქმნა, დუბლიკატები თავიდან ავიცილეთ.`);
+                    alert(`ატვირთული ყველა შეკვეთა (${duplicateCount}) უკვე ბაზაშია!\nახალი რეპორტი არ შეიქმნა.`);
                     btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა";
                     btn.disabled = false;
                     return;
@@ -351,6 +352,33 @@
             btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false;
         });
 
+        window.updateMasterDashboard = function() {
+            let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
+            window.allHistoryReports.forEach(rData => {
+                mTotal += rData.total || 0;
+                if(rData.data) {
+                    rData.data.forEach(item => {
+                        if(item.status === 'დროული') mOnTime++;
+                        else if(item.status === 'ადრე') mEarly++;
+                        else if(item.status === 'გვიან') mLate++;
+                        else if(item.status === '15წთ ცდომილება') mTol++;
+                    });
+                }
+            });
+
+            if(window.allHistoryReports.length === 0) {
+                document.getElementById('masterDashboard').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('m-val-total').innerText = mTotal;
+            document.getElementById('m-val-ontime').innerText = `${mOnTime} (${mTotal ? ((mOnTime/mTotal)*100).toFixed(1) : 0}%)`;
+            document.getElementById('m-val-early').innerText = `${mEarly} (${mTotal ? ((mEarly/mTotal)*100).toFixed(1) : 0}%)`;
+            document.getElementById('m-val-late').innerText = `${mLate} (${mTotal ? ((mLate/mTotal)*100).toFixed(1) : 0}%)`;
+            document.getElementById('m-val-tolerance').innerText = `${mTol} (${mTotal ? ((mTol/mTotal)*100).toFixed(1) : 0}%)`;
+            document.getElementById('masterDashboard').style.display = 'grid';
+        }
+
         window.loadHistory = async function() {
             const container = document.getElementById('historyListContainer');
             container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
@@ -358,35 +386,16 @@
             try {
                 const querySnapshot = await getDocs(collection(db, "reports"));
                 window.allHistoryReports = [];
-                let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
-
-                querySnapshot.forEach((doc) => { 
-                    const rData = doc.data();
-                    window.allHistoryReports.push(rData); 
-                    
-                    mTotal += rData.total || 0;
-                    rData.data.forEach(item => {
-                        if(item.status === 'დროული') mOnTime++;
-                        else if(item.status === 'ადრე') mEarly++;
-                        else if(item.status === 'გვიან') mLate++;
-                        else if(item.status === '15წთ ცდომილება') mTol++;
-                    });
-                });
-                
+                querySnapshot.forEach((doc) => { window.allHistoryReports.push(doc.data()); });
                 window.allHistoryReports.sort((a, b) => b.timestamp - a.timestamp);
 
                 if(window.allHistoryReports.length === 0) {
                     container.innerHTML = '<p style="text-align:center;">ისტორია ცარიელია.</p>';
+                    document.getElementById('masterDashboard').style.display = 'none';
                     return;
                 }
 
-                document.getElementById('m-val-total').innerText = mTotal;
-                document.getElementById('m-val-ontime').innerText = `${mOnTime} (${((mOnTime/mTotal)*100).toFixed(1)}%)`;
-                document.getElementById('m-val-early').innerText = `${mEarly} (${((mEarly/mTotal)*100).toFixed(1)}%)`;
-                document.getElementById('m-val-late').innerText = `${mLate} (${((mLate/mTotal)*100).toFixed(1)}%)`;
-                document.getElementById('m-val-tolerance').innerText = `${mTol} (${((mTol/mTotal)*100).toFixed(1)}%)`;
-                document.getElementById('masterDashboard').style.display = 'grid';
-
+                window.updateMasterDashboard();
                 window.renderHistoryCards(window.allHistoryReports);
             } catch(e) {
                 console.error(e);
@@ -399,7 +408,7 @@
             container.innerHTML = '';
             
             if(reportsArray.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#6b7280;">ამ ნომრით შეკვეთა არ მოიძებნა 🤷‍♂️</p>';
+                container.innerHTML = '<p style="text-align:center; color:#6b7280;">რეპორტები ვერ მოიძებნა</p>';
                 return;
             }
 
@@ -428,12 +437,34 @@
                         <div class="history-actions">
                             <input type="text" id="rep-comment-${rep.id}" class="rep-comment-input" value="${rep.reportComment || ''}" placeholder="ზოგადი კომენტარი ამ რეპორტზე...">
                             <button class="save-btn" onclick="saveReportComment('${rep.id}', this)">✔ შენახვა</button>
-                            <button class="open-report-btn" onclick="openReportFromHistory('${rep.id}')" style="margin-left:auto;">👁️ რეპორტის გახსნა</button>
+                            <div style="margin-left:auto; display:flex; gap:10px;">
+                                <button class="delete-btn" onclick="deleteReport('${rep.id}')">🗑️ წაშლა</button>
+                                <button class="open-report-btn" onclick="openReportFromHistory('${rep.id}')">👁️ გახსნა</button>
+                            </div>
                         </div>
                     </div>
                 `;
                 container.appendChild(item);
             });
+        }
+
+        // წაშლის ლოგიკა Firebase-დან
+        window.deleteReport = async function(id) {
+            if(!confirm("ნამდვილად გსურთ ამ რეპორტის წაშლა?\nმონაცემები ვეღარ აღდგება!")) return;
+            
+            try {
+                await deleteDoc(doc(db, "reports", id));
+                // ვშლით ლოკალური მასივიდანაც
+                window.allHistoryReports = window.allHistoryReports.filter(r => r.id !== id);
+                
+                // ვაახლებთ ეკრანს (ფილტრსაც ითვალისწინებს თუ ძებნაში ეწერა რამე)
+                window.filterHistory();
+                window.updateMasterDashboard();
+                
+            } catch (e) {
+                console.error("Delete Error:", e);
+                alert("წაშლისას დაფიქსირდა შეცდომა.");
+            }
         }
 
         window.filterHistory = function() {
@@ -601,11 +632,16 @@
             }, 1000);
         }
 
+        // გასწორებული ექსელის ჩამოტვირთვა
         window.exportExcel = function() {
             if(window.filteredResults.length === 0) return alert("მონაცემები არაა საჩვენებლად!");
             const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი", "ფაქტიური", "სტატუსი", "კომენტარი"]];
             window.filteredResults.forEach(item => wsData.push([item.order_id, item.courier, item.raw_req_info, item.raw_act_info, item.status, item.comment]));
-            window.XLSX.writeFile(window.XLSX.utils.book_append_sheet(window.XLSX.utils.book_new(), window.XLSX.utils.aoa_to_sheet(wsData), "შედეგები"), "Courier_Report.xlsx");
+            
+            const ws = window.XLSX.utils.aoa_to_sheet(wsData);
+            const wb = window.XLSX.utils.book_new();
+            window.XLSX.utils.book_append_sheet(wb, ws, "შედეგები");
+            window.XLSX.writeFile(wb, "Courier_Report.xlsx");
         }
     </script>
 </body>
