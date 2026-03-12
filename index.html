@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების კონტროლი (Cloud & History)</title>
+    <title>შეკვეთების კონტროლი (Cloud & Analytics)</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -19,7 +19,6 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 0; margin: 0; line-height: 1.5; }
         .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
         
-        /* ნავიგაცია */
         .navbar { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .nav-brand { font-size: 20px; font-weight: 800; color: var(--primary); }
         .nav-links { display: flex; gap: 15px; }
@@ -40,7 +39,8 @@
         .template-link { font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600; display: inline-flex; padding: 6px 12px; background: #e0e7ff; border-radius: 6px; margin-bottom: 16px; }
         input[type="file"] { font-size: 14px; width: 100%; }
         input[type="file"]::file-selector-button { border: 1px solid var(--border-color); background: #f9fafb; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; margin-right: 12px; }
-        .btn-primary { display: block; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+        .btn-primary { display: block; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); transition: 0.2s; }
+        .btn-primary:hover { background: var(--primary-hover); }
         .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
 
         .search-container { position: relative; width: 100%; max-width: 400px; margin-bottom: 20px; }
@@ -76,7 +76,7 @@
         .filters-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .btn-export { padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         
-        .table-wrapper { background: var(--card-bg); border-radius: 16px; overflow-x: auto; border: 1px solid var(--border-color); }
+        .table-wrapper { background: var(--card-bg); border-radius: 16px; overflow-x: auto; border: 1px solid var(--border-color); margin-bottom: 30px;}
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1000px; }
         th { background: #f9fafb; color: var(--text-muted); font-size: 12px; text-transform: uppercase; padding: 16px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10; }
         td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
@@ -93,6 +93,10 @@
         .comment-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 140px; outline: none; }
         .save-btn { padding: 8px 14px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s;}
         .save-btn:hover { background: #e5e7eb; }
+
+        /* თაიმსლოტების ცხრილის სტილი */
+        .ts-percentage { font-size: 12px; color: var(--text-muted); font-weight: normal; margin-left: 4px; }
+        .ts-count { font-weight: 700; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -128,12 +132,32 @@
         <div id="historyView" class="view-section">
             <h2 class="header-title">ისტორია და ჯამური ანალიტიკა</h2>
             
-            <div class="stats-row" id="masterDashboard" style="display:none; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed var(--border-color);">
+            <div class="stats-row" id="masterDashboard" style="display:none; margin-bottom: 24px;">
                 <div class="stat-card"><span class="stat-title">სულ ისტორიაში</span><span class="stat-value" id="m-val-total">0</span></div>
                 <div class="stat-card ontime"><span class="stat-title">დროული (ჯამში)</span><span class="stat-value" id="m-val-ontime">0</span></div>
                 <div class="stat-card early"><span class="stat-title">ადრე (ჯამში)</span><span class="stat-value" id="m-val-early">0</span></div>
                 <div class="stat-card late"><span class="stat-title">გვიან (ჯამში)</span><span class="stat-value" id="m-val-late">0</span></div>
                 <div class="stat-card tolerance"><span class="stat-title">15წთ (ჯამში)</span><span class="stat-value" id="m-val-tolerance">0</span></div>
+            </div>
+
+            <div id="timeslotAnalytics" style="display:none; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed var(--border-color);">
+                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-main);">📊 დატვირთულობა და შესრულება დროის დიაპაზონების მიხედვით</h3>
+                <div class="table-wrapper" style="margin-bottom: 0; min-width: unset;">
+                    <table style="min-width: 800px;">
+                        <thead>
+                            <tr>
+                                <th>დიაპაზონი</th>
+                                <th>ჯამური დატვირთვა</th>
+                                <th>დროულად</th>
+                                <th>15წთ ცდომილება</th>
+                                <th>ადრე</th>
+                                <th>დაგვიანება</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeslotTableBody">
+                            </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="search-container">
@@ -368,6 +392,7 @@
 
             if(window.allHistoryReports.length === 0) {
                 document.getElementById('masterDashboard').style.display = 'none';
+                document.getElementById('timeslotAnalytics').style.display = 'none';
                 return;
             }
 
@@ -377,6 +402,81 @@
             document.getElementById('m-val-late').innerText = `${mLate} (${mTotal ? ((mLate/mTotal)*100).toFixed(1) : 0}%)`;
             document.getElementById('m-val-tolerance').innerText = `${mTol} (${mTotal ? ((mTol/mTotal)*100).toFixed(1) : 0}%)`;
             document.getElementById('masterDashboard').style.display = 'grid';
+
+            window.renderTimeslotsAnalytics();
+        }
+
+        // ახალი: თაიმსლოტების ანალიტიკის გენერაცია
+        window.renderTimeslotsAnalytics = function() {
+            let slots = {};
+            let totalOrders = 0;
+
+            window.allHistoryReports.forEach(rep => {
+                if(!rep.data) return;
+                rep.data.forEach(item => {
+                    totalOrders++;
+                    
+                    // Regex-ით ვიღებთ მხოლოდ საათებს (მაგ: 11:00 - 15:00) რათა წამები ან თარიღები დავაიგნოროთ
+                    let match = String(item.raw_req_info).match(/\b(\d{1,2}:\d{2})(?::\d{2})?\s*-\s*(\d{1,2}:\d{2})(?::\d{2})?\b/);
+                    let slotName = match ? `${match[1]} - ${match[2]}` : "სხვა დრო";
+                    
+                    if(!slots[slotName]) {
+                        slots[slotName] = { total: 0, ontime: 0, early: 0, late: 0, tol: 0 };
+                    }
+                    
+                    slots[slotName].total++;
+                    if(item.status === 'დროული') slots[slotName].ontime++;
+                    else if(item.status === 'ადრე') slots[slotName].early++;
+                    else if(item.status === 'გვიან') slots[slotName].late++;
+                    else if(item.status === '15წთ ცდომილება') slots[slotName].tol++;
+                });
+            });
+
+            if(totalOrders === 0) {
+                document.getElementById('timeslotAnalytics').style.display = 'none';
+                return;
+            }
+
+            let sortedKeys = Object.keys(slots).sort();
+            let tbodyHtml = '';
+
+            sortedKeys.forEach(key => {
+                let s = slots[key];
+                let sharePct = ((s.total / totalOrders) * 100).toFixed(1);
+                let ontimePct = ((s.ontime / s.total) * 100).toFixed(1);
+                let tolPct = ((s.tol / s.total) * 100).toFixed(1);
+                let earlyPct = ((s.early / s.total) * 100).toFixed(1);
+                let latePct = ((s.late / s.total) * 100).toFixed(1);
+
+                tbodyHtml += `
+                    <tr>
+                        <td style="font-weight:700; color:var(--primary); font-size:15px;">${key}</td>
+                        <td>
+                            <span class="ts-count">${s.total}</span> 
+                            <span class="ts-percentage">(${sharePct}% წილი)</span>
+                        </td>
+                        <td>
+                            <span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> 
+                            <span class="ts-percentage">(${ontimePct}%)</span>
+                        </td>
+                        <td>
+                            <span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> 
+                            <span class="ts-percentage">(${tolPct}%)</span>
+                        </td>
+                        <td>
+                            <span class="ts-count" style="color:var(--warning-text);">${s.early}</span> 
+                            <span class="ts-percentage">(${earlyPct}%)</span>
+                        </td>
+                        <td>
+                            <span class="ts-count" style="color:var(--danger-text);">${s.late}</span> 
+                            <span class="ts-percentage">(${latePct}%)</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('timeslotTableBody').innerHTML = tbodyHtml;
+            document.getElementById('timeslotAnalytics').style.display = 'block';
         }
 
         window.loadHistory = async function() {
@@ -392,6 +492,7 @@
                 if(window.allHistoryReports.length === 0) {
                     container.innerHTML = '<p style="text-align:center;">ისტორია ცარიელია.</p>';
                     document.getElementById('masterDashboard').style.display = 'none';
+                    document.getElementById('timeslotAnalytics').style.display = 'none';
                     return;
                 }
 
@@ -448,23 +549,14 @@
             });
         }
 
-        // წაშლის ლოგიკა Firebase-დან
         window.deleteReport = async function(id) {
             if(!confirm("ნამდვილად გსურთ ამ რეპორტის წაშლა?\nმონაცემები ვეღარ აღდგება!")) return;
-            
             try {
                 await deleteDoc(doc(db, "reports", id));
-                // ვშლით ლოკალური მასივიდანაც
                 window.allHistoryReports = window.allHistoryReports.filter(r => r.id !== id);
-                
-                // ვაახლებთ ეკრანს (ფილტრსაც ითვალისწინებს თუ ძებნაში ეწერა რამე)
                 window.filterHistory();
                 window.updateMasterDashboard();
-                
-            } catch (e) {
-                console.error("Delete Error:", e);
-                alert("წაშლისას დაფიქსირდა შეცდომა.");
-            }
+            } catch (e) { console.error("Delete Error:", e); alert("წაშლისას დაფიქსირდა შეცდომა."); }
         }
 
         window.filterHistory = function() {
@@ -483,7 +575,6 @@
             const val = document.getElementById('rep-comment-' + id).value;
             const originalText = btnElement.innerText;
             btnElement.innerText = "⏳...";
-            
             try {
                 await updateDoc(doc(db, "reports", id), { reportComment: val });
                 const rIndex = window.allHistoryReports.findIndex(r => r.id === id);
@@ -496,7 +587,6 @@
             } catch (e) {
                 console.error(e); btnElement.innerText = "❌ შეცდომა";
             }
-
             setTimeout(() => {
                 btnElement.innerText = originalText;
                 btnElement.style.background = "";
@@ -632,7 +722,6 @@
             }, 1000);
         }
 
-        // გასწორებული ექსელის ჩამოტვირთვა
         window.exportExcel = function() {
             if(window.filteredResults.length === 0) return alert("მონაცემები არაა საჩვენებლად!");
             const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი", "ფაქტიური", "სტატუსი", "კომენტარი"]];
