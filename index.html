@@ -88,6 +88,9 @@
         
         .ts-percentage { font-size: 12px; color: var(--text-muted); font-weight: normal; margin-left: 4px; }
         .ts-count { font-weight: 700; font-size: 15px; }
+
+        /* კალენდრის ბლოკის დიზაინი */
+        .date-filter-container { background: var(--card-bg); padding: 15px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
     </style>
 </head>
 <body>
@@ -121,18 +124,30 @@
         </div>
 
         <div id="historyView" class="view-section">
-            <h2 class="header-title">ისტორია და ჯამური ანალიტიკა</h2>
+            <h2 class="header-title">ისტორია და ანალიტიკა</h2>
             
+            <div class="date-filter-container">
+                <span style="font-weight: 600; color: var(--text-muted); font-size: 14px;">📅 პერიოდი:</span>
+                <input type="date" id="filterStartDate" class="search-input" style="width: auto; padding: 8px 12px;">
+                <span style="color: var(--text-muted);">-</span>
+                <input type="date" id="filterEndDate" class="search-input" style="width: auto; padding: 8px 12px;">
+                <button class="save-btn" style="background: var(--primary); color: white; border: none; padding: 10px 16px;" onclick="applyDateFilter()">გაფილტვრა</button>
+                
+                <div style="margin-left: auto;">
+                    <button class="nav-btn" style="background: #e0e7ff; color: var(--primary);" onclick="loadTotalHistory()">📊 სრული ისტორიის ჩატვირთვა</button>
+                </div>
+            </div>
+
             <div class="stats-row" id="masterDashboard" style="display:none; margin-bottom: 24px;">
-                <div class="stat-card"><span class="stat-title">სულ ისტორიაში</span><span class="stat-value" id="m-val-total">0</span></div>
-                <div class="stat-card ontime"><span class="stat-title">დროული (ჯამში)</span><span class="stat-value" id="m-val-ontime">0</span></div>
-                <div class="stat-card early"><span class="stat-title">ადრე (ჯამში)</span><span class="stat-value" id="m-val-early">0</span></div>
-                <div class="stat-card late"><span class="stat-title">გვიან (ჯამში)</span><span class="stat-value" id="m-val-late">0</span></div>
-                <div class="stat-card tolerance"><span class="stat-title">15წთ (ჯამში)</span><span class="stat-value" id="m-val-tolerance">0</span></div>
+                <div class="stat-card"><span class="stat-title">სულ</span><span class="stat-value" id="m-val-total">0</span></div>
+                <div class="stat-card ontime"><span class="stat-title">დროული</span><span class="stat-value" id="m-val-ontime">0</span></div>
+                <div class="stat-card early"><span class="stat-title">ადრე</span><span class="stat-value" id="m-val-early">0</span></div>
+                <div class="stat-card late"><span class="stat-title">გვიან</span><span class="stat-value" id="m-val-late">0</span></div>
+                <div class="stat-card tolerance"><span class="stat-title">15წთ ცდომილება</span><span class="stat-value" id="m-val-tolerance">0</span></div>
             </div>
 
             <div id="timeslotAnalytics" style="display:none; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed var(--border-color);">
-                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-main);">📊 დატვირთულობა და შესრულება დროის დიაპაზონების მიხედვით</h3>
+                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-main);">📊 დატვირთულობა დროის დიაპაზონების მიხედვით</h3>
                 <div class="table-wrapper" style="margin-bottom: 0; min-width: unset;">
                     <table style="min-width: 800px;">
                         <thead>
@@ -151,7 +166,7 @@
             </div>
 
             <div class="history-list" id="historyListContainer">
-                <p style="text-align:center; color:#6b7280;">იტვირთება Cloud-დან...</p>
+                <p style="text-align:center; color:#6b7280;">იტვირთება მონაცემები ☁️...</p>
             </div>
         </div>
 
@@ -217,8 +232,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // დამატებულია query და where ოპტიმიზაციისთვის
-        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
@@ -268,7 +282,6 @@
             return (parseInt(parts[0] || 0) * 60) + parseInt(parts[1] || 0);
         }
 
-        // თარიღების შედარების გამოსწორებული ვერსია
         function calcStatus(reqD, reqT, actD, actT) {
             try {
                 let rDateStr = String(reqD).split(' ')[0]; 
@@ -303,7 +316,6 @@
             btn.disabled = true;
 
             try {
-                // ოპტიმიზაცია 1: ვითხოვთ მხოლოდ ბოლო 7 დღის რეპორტებს (უფრო სწრაფია)
                 const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
                 const q = query(collection(db, "reports"), where("timestamp", ">=", oneWeekAgo));
                 const querySnapshot = await getDocs(q);
@@ -330,7 +342,6 @@
 
                 btn.innerText = "⏳ ინახება Cloud-ში...";
 
-                // ოპტიმიზაცია 2: ექსელის ფაილების შედარება Map ობიექტით (წამიერი სისწრაფე)
                 const actualMap = new Map();
                 actualData.forEach(a => actualMap.set(String(a.order_id), a));
 
@@ -379,6 +390,74 @@
 
             btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false;
         });
+
+        // -------------------------------------------------------------
+        // ისტორიის ჩატვირთვის ლოგიკა კალენდრით
+        // -------------------------------------------------------------
+        window.loadHistory = function() {
+            // ავტომატურად ვსვამთ 1 კვირის დიაპაზონს ველებში
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - 7);
+
+            document.getElementById('filterStartDate').value = start.toISOString().split('T')[0];
+            document.getElementById('filterEndDate').value = end.toISOString().split('T')[0];
+
+            window.fetchHistoryData('range', start.setHours(0,0,0,0), end.setHours(23,59,59,999));
+        }
+
+        window.applyDateFilter = function() {
+            const startVal = document.getElementById('filterStartDate').value;
+            const endVal = document.getElementById('filterEndDate').value;
+            if(!startVal || !endVal) return alert("გთხოვთ აირჩიოთ საწყისი და საბოლოო თარიღი.");
+
+            const startTS = new Date(startVal).setHours(0,0,0,0);
+            const endTS = new Date(endVal).setHours(23,59,59,999);
+
+            window.fetchHistoryData('range', startTS, endTS);
+        }
+
+        window.loadTotalHistory = function() {
+            // ვასუფთავებთ კალენდრის ველებს
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            window.fetchHistoryData('all');
+        }
+
+        window.fetchHistoryData = async function(mode, startTS, endTS) {
+            const container = document.getElementById('historyListContainer');
+            container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
+            
+            try {
+                let q;
+                if (mode === 'all') {
+                    q = query(collection(db, "reports"), orderBy("timestamp", "desc"));
+                } else {
+                    q = query(collection(db, "reports"), 
+                        where("timestamp", ">=", startTS), 
+                        where("timestamp", "<=", endTS), 
+                        orderBy("timestamp", "desc")
+                    );
+                }
+
+                const querySnapshot = await getDocs(q);
+                window.allHistoryReports = [];
+                querySnapshot.forEach((doc) => { window.allHistoryReports.push(doc.data()); });
+
+                if(window.allHistoryReports.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">ამ პერიოდში ჩანაწერები არ მოიძებნა.</p>';
+                    document.getElementById('masterDashboard').style.display = 'none';
+                    document.getElementById('timeslotAnalytics').style.display = 'none';
+                    return;
+                }
+
+                window.updateMasterDashboard();
+                window.renderHistoryCards(window.allHistoryReports);
+            } catch(e) { 
+                console.error(e); 
+                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; 
+            }
+        }
 
         window.updateMasterDashboard = function() {
             let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
@@ -447,7 +526,7 @@
                 tbodyHtml += `
                     <tr>
                         <td style="font-weight:700; color:var(--primary); font-size:15px;">${key}</td>
-                        <td><span class="ts-count">${s.total}</span> <span class="ts-percentage">(${sharePct}%)</span></td>
+                        <td><span class="ts-count">${s.total}</span> <span class="ts-percentage">(${sharePct}% წილი)</span></td>
                         <td><span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> <span class="ts-percentage">(${ontimePct}%)</span></td>
                         <td><span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> <span class="ts-percentage">(${tolPct}%)</span></td>
                         <td><span class="ts-count" style="color:var(--warning-text);">${s.early}</span> <span class="ts-percentage">(${earlyPct}%)</span></td>
@@ -458,28 +537,6 @@
 
             document.getElementById('timeslotTableBody').innerHTML = tbodyHtml;
             document.getElementById('timeslotAnalytics').style.display = 'block';
-        }
-
-        window.loadHistory = async function() {
-            const container = document.getElementById('historyListContainer');
-            container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
-            
-            try {
-                const querySnapshot = await getDocs(collection(db, "reports"));
-                window.allHistoryReports = [];
-                querySnapshot.forEach((doc) => { window.allHistoryReports.push(doc.data()); });
-                window.allHistoryReports.sort((a, b) => b.timestamp - a.timestamp);
-
-                if(window.allHistoryReports.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;">ისტორია ცარიელია.</p>';
-                    document.getElementById('masterDashboard').style.display = 'none';
-                    document.getElementById('timeslotAnalytics').style.display = 'none';
-                    return;
-                }
-
-                window.updateMasterDashboard();
-                window.renderHistoryCards(window.allHistoryReports);
-            } catch(e) { console.error(e); container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; }
         }
 
         window.renderHistoryCards = function(reportsArray) {
