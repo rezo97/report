@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების კონტროლი (Cloud & Analytics)</title>
+    <title>შეკვეთების კონტროლი - Dressivery</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -17,12 +17,12 @@
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 0; margin: 0; line-height: 1.5; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
         
-        .navbar { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .navbar { background: var(--card-bg); padding: 15px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 10px; }
         .nav-brand { font-size: 20px; font-weight: 800; color: var(--primary); }
-        .nav-links { display: flex; gap: 15px; }
-        .nav-btn { padding: 8px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 15px; }
+        .nav-links { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .nav-btn { padding: 8px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 14px; }
         .nav-btn:hover { background: var(--bg-color); color: var(--text-main); }
         .nav-btn.active { background: #e0e7ff; color: var(--primary); }
 
@@ -30,7 +30,6 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ატვირთვა */
         .header-title { text-align: center; font-size: 26px; font-weight: 800; margin-bottom: 30px; }
         .upload-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px; }
         .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
@@ -48,7 +47,6 @@
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        /* ისტორიის ქარდები */
         .history-list { display: flex; flex-direction: column; gap: 16px; }
         .history-item { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .history-item:hover { border-color: #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
@@ -56,16 +54,11 @@
         .history-date { font-weight: 800; font-size: 18px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .history-mini-stats { display: flex; gap: 12px; font-size: 13px; font-weight: 600; flex-wrap: wrap; }
         .ms-badge { padding: 4px 8px; border-radius: 6px; }
-        
         .history-actions { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; flex-wrap: wrap; }
         .rep-comment-input { flex-grow: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; background: #f9fafb; min-width: 200px; }
-        .rep-comment-input:focus { border-color: var(--primary); background: #fff; }
         .open-report-btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-        .open-report-btn:hover { background: var(--primary-hover); }
         .delete-btn { padding: 10px 15px; background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-        .delete-btn:hover { background: #fca5a5; }
 
-        /* დეშბორდი და ცხრილი */
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--text-muted); display: flex; flex-direction: column; gap: 8px; }
         .stat-card.ontime { border-left-color: #10b981; } .stat-card.early { border-left-color: #f59e0b; } .stat-card.late { border-left-color: #ef4444; } .stat-card.tolerance { border-left-color: #6366f1; }
@@ -92,14 +85,13 @@
         .status-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background:#fff; cursor:pointer;}
         .comment-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 140px; outline: none; }
         .save-btn { padding: 8px 14px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s;}
-        .save-btn:hover { background: #e5e7eb; }
-
-        /* თაიმსლოტების ცხრილის სტილი */
+        
         .ts-percentage { font-size: 12px; color: var(--text-muted); font-weight: normal; margin-left: 4px; }
         .ts-count { font-weight: 700; font-size: 15px; }
     </style>
 </head>
 <body>
+
     <nav class="navbar">
         <div class="nav-brand">📦 Dressivery</div>
         <div class="nav-links">
@@ -109,7 +101,6 @@
     </nav>
 
     <div class="container">
-        
         <div id="uploadView" class="view-section active">
             <h2 class="header-title">მონაცემების ატვირთვა</h2>
             <div class="upload-section">
@@ -146,16 +137,10 @@
                     <table style="min-width: 800px;">
                         <thead>
                             <tr>
-                                <th>დიაპაზონი</th>
-                                <th>ჯამური დატვირთვა</th>
-                                <th>დროულად</th>
-                                <th>15წთ ცდომილება</th>
-                                <th>ადრე</th>
-                                <th>დაგვიანება</th>
+                                <th>დიაპაზონი</th><th>ჯამური დატვირთვა</th><th>დროულად</th><th>15წთ ცდომილება</th><th>ადრე</th><th>დაგვიანება</th>
                             </tr>
                         </thead>
-                        <tbody id="timeslotTableBody">
-                            </tbody>
+                        <tbody id="timeslotTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -217,10 +202,11 @@
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabName + 'View').classList.add('active');
             
-            if(event && event.currentTarget) {
+            if(event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
                 event.currentTarget.classList.add('active');
             } else {
-                document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+                let btn = document.querySelector(`button[onclick="switchTab('${tabName}')"]`);
+                if(btn) btn.classList.add('active');
             }
 
             if(tabName === 'history' && typeof window.loadHistory === 'function') {
@@ -231,7 +217,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // დამატებულია query და where ოპტიმიზაციისთვის
+        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
@@ -281,33 +268,50 @@
             return (parseInt(parts[0] || 0) * 60) + parseInt(parts[1] || 0);
         }
 
+        // თარიღების შედარების გამოსწორებული ვერსია
         function calcStatus(reqD, reqT, actD, actT) {
-            if (String(reqD).split(' ')[0] !== String(actD).split(' ')[0]) return "გვიან";
             try {
+                let rDateStr = String(reqD).split(' ')[0]; 
+                let aDateStr = String(actD).split(' ')[0]; 
+                
+                let rTime = new Date(rDateStr).setHours(0,0,0,0);
+                let aTime = new Date(aDateStr).setHours(0,0,0,0);
+
+                if (!isNaN(rTime) && !isNaN(aTime)) {
+                    if (aTime < rTime) return "ადრე";
+                    if (aTime > rTime) return "გვიან";
+                } else {
+                    if (rDateStr !== aDateStr) return "გვიან"; 
+                }
+
                 let [s, e] = String(reqT).split('-');
                 let startMins = timeToMins(s.trim()), endMins = timeToMins(e.trim()), actMins = timeToMins(String(actT).trim().split(' ')[0]);
+                
                 if (actMins >= startMins && actMins <= endMins) return "დროული";
                 if (actMins < startMins && (startMins - actMins) <= 15) return "15წთ ცდომილება";
                 if (actMins > endMins && (actMins - endMins) <= 15) return "15წთ ცდომილება";
                 return actMins < startMins ? "ადრე" : "გვიან";
-            } catch { return "შეცდომა"; }
+            } catch { 
+                return "შეცდომა"; 
+            }
         }
 
         document.getElementById('processBtn').addEventListener('click', async () => {
             if(!actualData.length || !requestedData.length) { alert("გთხოვთ ატვირთოთ ორივე ფაილი."); return; }
-            
             const btn = document.getElementById('processBtn');
-            btn.innerText = "🔍 მოწმდება ბაზა დუბლიკატებზე...";
+            btn.innerText = "🔍 მოწმდება ბოლო კვირის ბაზა დუბლიკატებზე...";
             btn.disabled = true;
 
             try {
-                const querySnapshot = await getDocs(collection(db, "reports"));
+                // ოპტიმიზაცია 1: ვითხოვთ მხოლოდ ბოლო 7 დღის რეპორტებს (უფრო სწრაფია)
+                const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+                const q = query(collection(db, "reports"), where("timestamp", ">=", oneWeekAgo));
+                const querySnapshot = await getDocs(q);
+                
                 const existingIds = new Set();
                 querySnapshot.forEach(doc => {
                     const rData = doc.data();
-                    if(rData.data) {
-                        rData.data.forEach(item => existingIds.add(String(item.order_id)));
-                    }
+                    if(rData.data) { rData.data.forEach(item => existingIds.add(String(item.order_id))); }
                 });
 
                 let newRequestedData = [];
@@ -319,17 +323,20 @@
                 });
 
                 if(newRequestedData.length === 0) {
-                    alert(`ატვირთული ყველა შეკვეთა (${duplicateCount}) უკვე ბაზაშია!\nახალი რეპორტი არ შეიქმნა.`);
+                    alert(`ატვირთული შეკვეთები უკვე ფიქსირდება ბოლო კვირის ბაზაში!\nახალი რეპორტი არ შეიქმნა.`);
                     btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა";
-                    btn.disabled = false;
-                    return;
+                    btn.disabled = false; return;
                 }
 
                 btn.innerText = "⏳ ინახება Cloud-ში...";
 
+                // ოპტიმიზაცია 2: ექსელის ფაილების შედარება Map ობიექტით (წამიერი სისწრაფე)
+                const actualMap = new Map();
+                actualData.forEach(a => actualMap.set(String(a.order_id), a));
+
                 let reportDataArray = [];
                 newRequestedData.forEach(req => {
-                    const actual = actualData.find(a => String(a.order_id) === String(req.order_id));
+                    const actual = actualMap.get(String(req.order_id));
                     if(actual) {
                         const status = calcStatus(req.requested_date, req.requested_time, actual.date, actual.time);
                         reportDataArray.push({
@@ -345,8 +352,7 @@
                 if(reportDataArray.length === 0) {
                      alert("ახალი შეკვეთებიდან ვერცერთი ვერ დაემთხვა ფაქტიურ ფაილს.");
                      btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა";
-                     btn.disabled = false;
-                     return;
+                     btn.disabled = false; return;
                 }
 
                 const reportId = Date.now().toString();
@@ -369,9 +375,7 @@
                 document.getElementById('reportView').classList.add('active');
                 
                 window.updateDashboard(); window.renderTable();
-            } catch (error) {
-                console.error(error); alert("შეცდომა ბაზაში შენახვისას.");
-            }
+            } catch (error) { console.error(error); alert("შეცდომა ბაზაში შენახვისას."); }
 
             btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false;
         });
@@ -406,7 +410,6 @@
             window.renderTimeslotsAnalytics();
         }
 
-        // ახალი: თაიმსლოტების ანალიტიკის გენერაცია
         window.renderTimeslotsAnalytics = function() {
             let slots = {};
             let totalOrders = 0;
@@ -415,14 +418,10 @@
                 if(!rep.data) return;
                 rep.data.forEach(item => {
                     totalOrders++;
-                    
-                    // Regex-ით ვიღებთ მხოლოდ საათებს (მაგ: 11:00 - 15:00) რათა წამები ან თარიღები დავაიგნოროთ
                     let match = String(item.raw_req_info).match(/\b(\d{1,2}:\d{2})(?::\d{2})?\s*-\s*(\d{1,2}:\d{2})(?::\d{2})?\b/);
                     let slotName = match ? `${match[1]} - ${match[2]}` : "სხვა დრო";
                     
-                    if(!slots[slotName]) {
-                        slots[slotName] = { total: 0, ontime: 0, early: 0, late: 0, tol: 0 };
-                    }
+                    if(!slots[slotName]) slots[slotName] = { total: 0, ontime: 0, early: 0, late: 0, tol: 0 };
                     
                     slots[slotName].total++;
                     if(item.status === 'დროული') slots[slotName].ontime++;
@@ -432,10 +431,7 @@
                 });
             });
 
-            if(totalOrders === 0) {
-                document.getElementById('timeslotAnalytics').style.display = 'none';
-                return;
-            }
+            if(totalOrders === 0) { document.getElementById('timeslotAnalytics').style.display = 'none'; return; }
 
             let sortedKeys = Object.keys(slots).sort();
             let tbodyHtml = '';
@@ -451,26 +447,11 @@
                 tbodyHtml += `
                     <tr>
                         <td style="font-weight:700; color:var(--primary); font-size:15px;">${key}</td>
-                        <td>
-                            <span class="ts-count">${s.total}</span> 
-                            <span class="ts-percentage">(${sharePct}% )</span>
-                        </td>
-                        <td>
-                            <span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> 
-                            <span class="ts-percentage">(${ontimePct}%)</span>
-                        </td>
-                        <td>
-                            <span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> 
-                            <span class="ts-percentage">(${tolPct}%)</span>
-                        </td>
-                        <td>
-                            <span class="ts-count" style="color:var(--warning-text);">${s.early}</span> 
-                            <span class="ts-percentage">(${earlyPct}%)</span>
-                        </td>
-                        <td>
-                            <span class="ts-count" style="color:var(--danger-text);">${s.late}</span> 
-                            <span class="ts-percentage">(${latePct}%)</span>
-                        </td>
+                        <td><span class="ts-count">${s.total}</span> <span class="ts-percentage">(${sharePct}% წილი)</span></td>
+                        <td><span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> <span class="ts-percentage">(${ontimePct}%)</span></td>
+                        <td><span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> <span class="ts-percentage">(${tolPct}%)</span></td>
+                        <td><span class="ts-count" style="color:var(--warning-text);">${s.early}</span> <span class="ts-percentage">(${earlyPct}%)</span></td>
+                        <td><span class="ts-count" style="color:var(--danger-text);">${s.late}</span> <span class="ts-percentage">(${latePct}%)</span></td>
                     </tr>
                 `;
             });
@@ -498,20 +479,14 @@
 
                 window.updateMasterDashboard();
                 window.renderHistoryCards(window.allHistoryReports);
-            } catch(e) {
-                console.error(e);
-                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>';
-            }
+            } catch(e) { console.error(e); container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; }
         }
 
         window.renderHistoryCards = function(reportsArray) {
             const container = document.getElementById('historyListContainer');
             container.innerHTML = '';
             
-            if(reportsArray.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#6b7280;">რეპორტები ვერ მოიძებნა</p>';
-                return;
-            }
+            if(reportsArray.length === 0) { container.innerHTML = '<p style="text-align:center; color:#6b7280;">რეპორტები ვერ მოიძებნა</p>'; return; }
 
             reportsArray.forEach(rep => {
                 let onTime = 0, early = 0, late = 0, tol = 0;
@@ -554,17 +529,13 @@
             try {
                 await deleteDoc(doc(db, "reports", id));
                 window.allHistoryReports = window.allHistoryReports.filter(r => r.id !== id);
-                window.filterHistory();
-                window.updateMasterDashboard();
+                window.filterHistory(); window.updateMasterDashboard();
             } catch (e) { console.error("Delete Error:", e); alert("წაშლისას დაფიქსირდა შეცდომა."); }
         }
 
         window.filterHistory = function() {
             const searchTerm = document.getElementById('historySearchInput').value.toLowerCase().trim();
-            if(!searchTerm) {
-                window.renderHistoryCards(window.allHistoryReports);
-                return;
-            }
+            if(!searchTerm) { window.renderHistoryCards(window.allHistoryReports); return; }
             const filtered = window.allHistoryReports.filter(rep => {
                 return rep.data.some(order => String(order.order_id).toLowerCase().includes(searchTerm));
             });
@@ -579,20 +550,9 @@
                 await updateDoc(doc(db, "reports", id), { reportComment: val });
                 const rIndex = window.allHistoryReports.findIndex(r => r.id === id);
                 if(rIndex > -1) window.allHistoryReports[rIndex].reportComment = val;
-
-                btnElement.innerText = "✔ ინახება";
-                btnElement.style.background = "#d1fae5";
-                btnElement.style.borderColor = "#10b981";
-                btnElement.style.color = "#065f46";
-            } catch (e) {
-                console.error(e); btnElement.innerText = "❌ შეცდომა";
-            }
-            setTimeout(() => {
-                btnElement.innerText = originalText;
-                btnElement.style.background = "";
-                btnElement.style.borderColor = "";
-                btnElement.style.color = "";
-            }, 1500);
+                btnElement.innerText = "✔ ინახება"; btnElement.style.background = "#d1fae5"; btnElement.style.borderColor = "#10b981"; btnElement.style.color = "#065f46";
+            } catch (e) { console.error(e); btnElement.innerText = "❌ შეცდომა"; }
+            setTimeout(() => { btnElement.innerText = originalText; btnElement.style.background = ""; btnElement.style.borderColor = ""; btnElement.style.color = ""; }, 1500);
         }
 
         window.openReportFromHistory = function(reportId) {
@@ -602,7 +562,6 @@
             window.currentReportId = reportObj.id;
             window.globalResults = reportObj.data;
             document.getElementById('reportTitle').innerText = `რეპორტი: ${reportObj.dateStr}`;
-            
             document.getElementById('tableSearchInput').value = '';
             
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
