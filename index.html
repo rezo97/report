@@ -92,13 +92,19 @@
 
         .date-filter-container { background: var(--card-bg); padding: 15px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
         
-        /* მიზეზების დეშბორდის სტილი */
         .reasons-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .reason-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; }
         .reason-box h4 { margin: 0 0 12px 0; font-size: 14px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .reason-item { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--border-color); }
         .reason-item:last-child { border-bottom: none; }
         .reason-count { font-weight: 700; background: var(--bg-color); padding: 2px 8px; border-radius: 999px; }
+
+        /* Tooltip-ის დიზაინი */
+        .info-tooltip { position: relative; display: inline-flex; margin-left: auto; cursor: help; color: var(--text-muted); background: #f3f4f6; width: 22px; height: 22px; border-radius: 50%; align-items: center; justify-content: center; transition: 0.2s; }
+        .info-tooltip:hover { background: #e5e7eb; color: var(--text-main); }
+        .tooltip-text { visibility: hidden; width: 260px; background-color: #1f2937; color: #fff; text-align: left; border-radius: 8px; padding: 12px; position: absolute; z-index: 10; bottom: 130%; right: -5px; opacity: 0; transition: opacity 0.2s; font-size: 12px; font-weight: normal; line-height: 1.5; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); pointer-events: none;}
+        .tooltip-text::after { content: ""; position: absolute; top: 100%; right: 10px; border-width: 6px; border-style: solid; border-color: #1f2937 transparent transparent transparent; }
+        .info-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body>
@@ -159,7 +165,13 @@
                     <div id="m-late-reasons-list"></div>
                 </div>
                 <div class="reason-box">
-                    <h4>🟢 დროულის მიზეზები</h4>
+                    <h4>
+                        🟢 დროულის მიზეზები
+                        <div class="info-tooltip">
+                            ℹ
+                            <span class="tooltip-text">ეს სტატუსი მოიცავს ისეთ შეკვეთებს, რომლებსაც დროულად ვამუშავებდით მაგრამ მომხმარებელმა შეგვიცვალა ჩაბარების დრო ან მისამართი</span>
+                        </div>
+                    </h4>
                     <div id="m-ontime-reasons-list"></div>
                 </div>
             </div>
@@ -206,7 +218,13 @@
                     <div id="rep-late-reasons-list"></div>
                 </div>
                 <div class="reason-box">
-                    <h4>🟢 დროულის მიზეზები</h4>
+                    <h4>
+                        🟢 დროულის მიზეზები
+                        <div class="info-tooltip">
+                            ℹ
+                            <span class="tooltip-text">ეს სტატუსი მოიცავს ისეთ შეკვეთებს, რომლებსაც დროულად ვამუშავებდით მაგრამ მომხმარებელმა შეგვიცვალა ჩაბარების დრო ან მისამართი</span>
+                        </div>
+                    </h4>
                     <div id="rep-ontime-reasons-list"></div>
                 </div>
             </div>
@@ -289,7 +307,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- ქვე-სტატუსების ობიექტი ---
         const SUB_STATUSES = {
             "გვიან": ["საკურიეროს დაგვიანება", "გამზადების დაგვიანება", "ფაილის დაგვიანება", "წუნი/ვერ მოიძებნა", "შემოტანის დაგვიანება"],
             "დროული": ["მომხმარებელთან შეთანხმებით"]
@@ -380,7 +397,7 @@
                             order_id: req.order_id, courier: actual.courier || '-',
                             req_info: `<div style="font-weight:500;">${req.requested_date}</div><div style="color:#6b7280; font-size:12px;">${req.requested_time}</div>`,
                             act_info: `<div style="font-weight:500;">${actual.date}</div><div style="color:#6b7280; font-size:12px;">${actual.time}</div>`,
-                            auto_status: status, status: status, sub_status: "", comment: '', // დაემატა sub_status
+                            auto_status: status, status: status, sub_status: "", comment: '',
                             raw_req_info: `${req.requested_date} ${req.requested_time}`, raw_act_info: `${actual.date} ${actual.time}`
                         });
                     }
@@ -446,11 +463,8 @@
             } catch(e) { console.error(e); container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; }
         }
 
-        // --- მიზეზების რენდერის ფუნქცია ---
         function renderReasons(dataArray, lateContainerId, ontimeContainerId) {
             let lateCounts = {}; let ontimeCounts = {};
-            
-            // ვაინიცირებთ ნულებით
             SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
             SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
 
@@ -612,10 +626,7 @@
 
             window.filteredResults = window.globalResults.filter(item => {
                 if(searchTerm && !String(item.order_id).toLowerCase().includes(searchTerm)) return false;
-                
-                // მიზეზის ფილტრაცია
                 if(filterSubStatus && item.sub_status !== filterSubStatus) return false;
-
                 if(item.status === 'დროული' && showOnTime) return true;
                 if(item.status === 'ადრე' && showEarly) return true;
                 if(item.status === 'გვიან' && showLate) return true;
@@ -628,8 +639,6 @@
             
             window.filteredResults.forEach(item => {
                 const isOverridden = item.status !== item.auto_status;
-                
-                // ქვე-სტატუსის HTML გენერაცია
                 let subStatusHtml = '';
                 if (SUB_STATUSES[item.status]) {
                     subStatusHtml = `<select class="sub-status-select" onchange="overrideSubStatus('${item.order_id}', this.value)">
@@ -679,18 +688,17 @@
                 let resolvedStatus = newStatus === "" ? item.auto_status : newStatus;
                 if(item.status !== resolvedStatus) {
                     item.status = resolvedStatus;
-                    item.sub_status = ""; // ვასუფთავებთ მიზეზს სტატუსის შეცვლისას
+                    item.sub_status = "";
                 }
                 window.updateDashboard(); window.renderTable(); await updateCloudReport(); 
             }
         }
 
-        // ახალი: ქვე-სტატუსის შეცვლის ფუნქცია
         window.overrideSubStatus = async function(id, newSubStatus) {
             const item = window.globalResults.find(i => String(i.order_id) === String(id));
             if(item) {
                 item.sub_status = newSubStatus;
-                window.updateDashboard(); // ვაახლებთ რიცხვებს დეშბორდზე
+                window.updateDashboard(); 
                 await updateCloudReport(); 
             }
         }
