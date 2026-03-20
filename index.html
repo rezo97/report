@@ -5,6 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>შეკვეთების კონტროლი - Dressivery</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName + 'View').classList.add('active');
+            
+            if(event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
+                event.currentTarget.classList.add('active');
+            } else {
+                let btn = document.querySelector(`button[onclick="switchTab('${tabName}')"]`);
+                if(btn) btn.classList.add('active');
+            }
+
+            if(tabName === 'history' && typeof window.loadHistory === 'function') {
+                window.loadHistory();
+            }
+        }
+    </script>
+
     <style>
         :root {
             --primary: #4f46e5; --primary-hover: #4338ca;
@@ -25,6 +45,7 @@
         .nav-btn { padding: 8px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 14px; }
         .nav-btn:hover { background: var(--bg-color); color: var(--text-main); }
         .nav-btn.active { background: #e0e7ff; color: var(--primary); }
+        .nav-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .view-section { display: none; animation: fadeIn 0.4s ease; }
         .view-section.active { display: block; }
@@ -99,7 +120,6 @@
         .reason-item:last-child { border-bottom: none; }
         .reason-count { font-weight: 700; background: var(--bg-color); padding: 2px 8px; border-radius: 999px; }
 
-        /* Tooltip-ის დიზაინი */
         .info-tooltip { position: relative; display: inline-flex; margin-left: auto; cursor: help; color: var(--text-muted); background: #f3f4f6; width: 22px; height: 22px; border-radius: 50%; align-items: center; justify-content: center; transition: 0.2s; }
         .info-tooltip:hover { background: #e5e7eb; color: var(--text-main); }
         .tooltip-text { visibility: hidden; width: 260px; background-color: #1f2937; color: #fff; text-align: left; border-radius: 8px; padding: 12px; position: absolute; z-index: 10; bottom: 130%; right: -5px; opacity: 0; transition: opacity 0.2s; font-size: 12px; font-weight: normal; line-height: 1.5; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); pointer-events: none;}
@@ -145,9 +165,9 @@
                 <input type="date" id="filterStartDate" class="search-input" style="width: auto; padding: 8px 12px;">
                 <span style="color: var(--text-muted);">-</span>
                 <input type="date" id="filterEndDate" class="search-input" style="width: auto; padding: 8px 12px;">
-                <button class="save-btn" style="background: var(--primary); color: white; border: none; padding: 10px 16px;" onclick="applyDateFilter()">გაფილტვრა</button>
+                <button id="filterBtn" class="save-btn" style="background: var(--primary); color: white; border: none; padding: 10px 16px;" onclick="applyDateFilter(this)">გაფილტვრა</button>
                 <div style="margin-left: auto;">
-                    <button class="nav-btn" style="background: #e0e7ff; color: var(--primary);" onclick="loadTotalHistory()">📊 სრული ისტორია</button>
+                    <button id="loadAllBtn" class="nav-btn" style="background: #e0e7ff; color: var(--primary);" onclick="loadTotalHistory(this)">📊 სრული ისტორია</button>
                 </div>
             </div>
 
@@ -167,10 +187,7 @@
                 <div class="reason-box">
                     <h4>
                         🟢 დროულის მიზეზები
-                        <div class="info-tooltip">
-                            ℹ
-                            <span class="tooltip-text">ეს სტატუსი მოიცავს ისეთ შეკვეთებს, რომლებსაც დროულად ვამუშავებდით მაგრამ მომხმარებელმა შეგვიცვალა ჩაბარების დრო ან მისამართი</span>
-                        </div>
+                        <div class="info-tooltip">ℹ<span class="tooltip-text">ეს სტატუსი მოიცავს ისეთ შეკვეთებს, რომლებსაც დროულად ვამუშავებდით მაგრამ მომხმარებელმა შეგვიცვალა ჩაბარების დრო ან მისამართი</span></div>
                     </h4>
                     <div id="m-ontime-reasons-list"></div>
                 </div>
@@ -220,10 +237,7 @@
                 <div class="reason-box">
                     <h4>
                         🟢 დროულის მიზეზები
-                        <div class="info-tooltip">
-                            ℹ
-                            <span class="tooltip-text">ეს სტატუსი მოიცავს ისეთ შეკვეთებს, რომლებსაც დროულად ვამუშავებდით მაგრამ მომხმარებელმა შეგვიცვალა ჩაბარების დრო ან მისამართი</span>
-                        </div>
+                        <div class="info-tooltip">ℹ<span class="tooltip-text">ეს სტატუსი მოიცავს ისეთ შეკვეთებს, რომლებსაც დროულად ვამუშავებდით მაგრამ მომხმარებელმა შეგვიცვალა ჩაბარების დრო ან მისამართი</span></div>
                     </h4>
                     <div id="rep-ontime-reasons-list"></div>
                 </div>
@@ -271,25 +285,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabName + 'View').classList.add('active');
-            
-            if(event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
-                event.currentTarget.classList.add('active');
-            } else {
-                let btn = document.querySelector(`button[onclick="switchTab('${tabName}')"]`);
-                if(btn) btn.classList.add('active');
-            }
-
-            if(tabName === 'history' && typeof window.loadHistory === 'function') {
-                window.loadHistory();
-            }
-        }
-    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -383,7 +378,7 @@
 
                 if(newRequestedData.length === 0) {
                     alert(`ატვირთული შეკვეთები უკვე ფიქსირდება ბაზაში!\nახალი რეპორტი არ შეიქმნა.`);
-                    btn.innerText = "სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false; return;
+                    btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false; return;
                 }
                 btn.innerText = "⏳ ინახება Cloud-ში...";
                 const actualMap = new Map(); actualData.forEach(a => actualMap.set(String(a.order_id), a));
@@ -403,7 +398,7 @@
                     }
                 });
 
-                if(reportDataArray.length === 0) { alert("ვერცერთი დაემთხვა."); btn.innerText = "სინქრონიზაცია"; btn.disabled = false; return; }
+                if(reportDataArray.length === 0) { alert("ვერცერთი დაემთხვა."); btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false; return; }
 
                 const reportId = Date.now().toString();
                 const reportObj = {
@@ -432,22 +427,34 @@
             window.fetchHistoryData('range', start.setHours(0,0,0,0), end.setHours(23,59,59,999));
         }
 
-        window.applyDateFilter = function() {
+        window.applyDateFilter = function(btnElement) {
             const startVal = document.getElementById('filterStartDate').value, endVal = document.getElementById('filterEndDate').value;
             if(!startVal || !endVal) return alert("გთხოვთ აირჩიოთ თარიღი.");
-            window.fetchHistoryData('range', new Date(startVal).setHours(0,0,0,0), new Date(endVal).setHours(23,59,59,999));
+            window.fetchHistoryData('range', new Date(startVal).setHours(0,0,0,0), new Date(endVal).setHours(23,59,59,999), btnElement);
         }
 
-        window.loadTotalHistory = function() {
+        window.loadTotalHistory = function(btnElement) {
             document.getElementById('filterStartDate').value = ''; document.getElementById('filterEndDate').value = '';
-            window.fetchHistoryData('all');
+            window.fetchHistoryData('all', null, null, btnElement);
         }
 
-        window.fetchHistoryData = async function(mode, startTS, endTS) {
+        window.fetchHistoryData = async function(mode, startTS, endTS, btnElement) {
             const container = document.getElementById('historyListContainer');
             container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
+            
+            // დაცვა ღილაკის მრავალჯერ დაჭერისგან
+            let originalText = "";
+            if(btnElement) {
+                originalText = btnElement.innerText;
+                btnElement.innerText = "⏳ იტვირთება...";
+                btnElement.disabled = true;
+            }
+
             try {
-                let q = mode === 'all' ? query(collection(db, "reports"), orderBy("timestamp", "desc")) : query(collection(db, "reports"), where("timestamp", ">=", startTS), where("timestamp", "<=", endTS), orderBy("timestamp", "desc"));
+                let q = mode === 'all' 
+                    ? query(collection(db, "reports"), orderBy("timestamp", "desc")) 
+                    : query(collection(db, "reports"), where("timestamp", ">=", startTS), where("timestamp", "<=", endTS), orderBy("timestamp", "desc"));
+                
                 const querySnapshot = await getDocs(q);
                 window.allHistoryReports = [];
                 querySnapshot.forEach((doc) => { window.allHistoryReports.push(doc.data()); });
@@ -457,48 +464,68 @@
                     document.getElementById('masterDashboard').style.display = 'none';
                     document.getElementById('masterReasonsDashboard').style.display = 'none';
                     document.getElementById('timeslotAnalytics').style.display = 'none';
-                    return;
+                } else {
+                    window.updateMasterDashboard(); 
+                    window.renderHistoryCards(window.allHistoryReports);
                 }
-                window.updateMasterDashboard(); window.renderHistoryCards(window.allHistoryReports);
-            } catch(e) { console.error(e); container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; }
+            } catch(e) { 
+                console.error(e); 
+                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; 
+            } finally {
+                // ვუბრუნებთ ღილაკს საწყის მდგომარეობას
+                if(btnElement) {
+                    btnElement.innerText = originalText;
+                    btnElement.disabled = false;
+                }
+            }
         }
 
-        function renderReasons(dataArray, lateContainerId, ontimeContainerId) {
-            let lateCounts = {}; let ontimeCounts = {};
-            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
-            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
-
-            dataArray.forEach(item => {
-                if (item.status === 'გვიან' && item.sub_status) { lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1; }
-                if (item.status === 'დროული' && item.sub_status) { ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1; }
-            });
-
+        function renderReasons(lateCountsObj, ontimeCountsObj, lateContainerId, ontimeContainerId) {
             let lateHtml = '';
-            Object.keys(lateCounts).forEach(k => { if(lateCounts[k] > 0) lateHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${lateCounts[k]}</span></div>`; });
+            Object.keys(lateCountsObj).forEach(k => { if(lateCountsObj[k] > 0) lateHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${lateCountsObj[k]}</span></div>`; });
             document.getElementById(lateContainerId).innerHTML = lateHtml || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
 
             let ontimeHtml = '';
-            Object.keys(ontimeCounts).forEach(k => { if(ontimeCounts[k] > 0) ontimeHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${ontimeCounts[k]}</span></div>`; });
+            Object.keys(ontimeCountsObj).forEach(k => { if(ontimeCountsObj[k] > 0) ontimeHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${ontimeCountsObj[k]}</span></div>`; });
             document.getElementById(ontimeContainerId).innerHTML = ontimeHtml || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
         }
 
+        // სრული ოპტიმიზაცია: ყველა კალკულაცია ერთ ციკლში
         window.updateMasterDashboard = function() {
-            let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
-            let allItems = [];
-            window.allHistoryReports.forEach(rData => {
-                mTotal += rData.total || 0;
-                if(rData.data) {
-                    rData.data.forEach(item => {
-                        allItems.push(item);
-                        if(item.status === 'დროული') mOnTime++;
-                        else if(item.status === 'ადრე') mEarly++;
-                        else if(item.status === 'გვიან') mLate++;
-                        else if(item.status === '15წთ ცდომილება') mTol++;
-                    });
-                }
-            });
-
             if(window.allHistoryReports.length === 0) return;
+
+            let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
+            let lateCounts = {}; let ontimeCounts = {};
+            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
+            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
+            
+            let slots = {};
+            const slotRegex = /\b(\d{1,2}:\d{2})(?::\d{2})?\s*-\s*(\d{1,2}:\d{2})(?::\d{2})?\b/;
+
+            window.allHistoryReports.forEach(rep => {
+                if(!rep.data) return;
+                rep.data.forEach(item => {
+                    mTotal++;
+                    
+                    if(item.status === 'დროული') mOnTime++;
+                    else if(item.status === 'ადრე') mEarly++;
+                    else if(item.status === 'გვიან') mLate++;
+                    else if(item.status === '15წთ ცდომილება') mTol++;
+
+                    if (item.status === 'გვიან' && item.sub_status) { lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1; }
+                    if (item.status === 'დროული' && item.sub_status) { ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1; }
+
+                    let match = String(item.raw_req_info).match(slotRegex);
+                    let slotName = match ? `${match[1]} - ${match[2]}` : "სხვა დრო";
+                    if(!slots[slotName]) slots[slotName] = { total: 0, ontime: 0, early: 0, late: 0, tol: 0 };
+                    
+                    slots[slotName].total++;
+                    if(item.status === 'დროული') slots[slotName].ontime++; 
+                    else if(item.status === 'ადრე') slots[slotName].early++; 
+                    else if(item.status === 'გვიან') slots[slotName].late++; 
+                    else if(item.status === '15წთ ცდომილება') slots[slotName].tol++;
+                });
+            });
 
             document.getElementById('m-val-total').innerText = mTotal;
             document.getElementById('m-val-ontime').innerText = `${mOnTime} (${mTotal ? ((mOnTime/mTotal)*100).toFixed(1) : 0}%)`;
@@ -509,54 +536,42 @@
             document.getElementById('masterDashboard').style.display = 'grid';
             document.getElementById('masterReasonsDashboard').style.display = 'grid';
 
-            renderReasons(allItems, 'm-late-reasons-list', 'm-ontime-reasons-list');
-            window.renderTimeslotsAnalytics();
-        }
+            renderReasons(lateCounts, ontimeCounts, 'm-late-reasons-list', 'm-ontime-reasons-list');
 
-        window.renderTimeslotsAnalytics = function() {
-            let slots = {}; let totalOrders = 0;
-            window.allHistoryReports.forEach(rep => {
-                if(!rep.data) return;
-                rep.data.forEach(item => {
-                    totalOrders++;
-                    let match = String(item.raw_req_info).match(/\b(\d{1,2}:\d{2})(?::\d{2})?\s*-\s*(\d{1,2}:\d{2})(?::\d{2})?\b/);
-                    let slotName = match ? `${match[1]} - ${match[2]}` : "სხვა დრო";
-                    if(!slots[slotName]) slots[slotName] = { total: 0, ontime: 0, early: 0, late: 0, tol: 0 };
-                    slots[slotName].total++;
-                    if(item.status === 'დროული') slots[slotName].ontime++; else if(item.status === 'ადრე') slots[slotName].early++; else if(item.status === 'გვიან') slots[slotName].late++; else if(item.status === '15წთ ცდომილება') slots[slotName].tol++;
-                });
-            });
-
-            if(totalOrders === 0) { document.getElementById('timeslotAnalytics').style.display = 'none'; return; }
-
+            // თაიმსლოტების გადახატვა 
             let sortedKeys = Object.keys(slots).sort(); let tbodyHtml = '';
             sortedKeys.forEach(key => {
-                let s = slots[key]; let sharePct = ((s.total / totalOrders) * 100).toFixed(1); let ontimePct = ((s.ontime / s.total) * 100).toFixed(1); let tolPct = ((s.tol / s.total) * 100).toFixed(1); let earlyPct = ((s.early / s.total) * 100).toFixed(1); let latePct = ((s.late / s.total) * 100).toFixed(1);
+                let s = slots[key]; let sharePct = ((s.total / mTotal) * 100).toFixed(1); let ontimePct = ((s.ontime / s.total) * 100).toFixed(1); let tolPct = ((s.tol / s.total) * 100).toFixed(1); let earlyPct = ((s.early / s.total) * 100).toFixed(1); let latePct = ((s.late / s.total) * 100).toFixed(1);
                 tbodyHtml += `<tr><td style="font-weight:700; color:var(--primary); font-size:15px;">${key}</td><td><span class="ts-count">${s.total}</span> <span class="ts-percentage">(${sharePct}% წილი)</span></td><td><span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> <span class="ts-percentage">(${ontimePct}%)</span></td><td><span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> <span class="ts-percentage">(${tolPct}%)</span></td><td><span class="ts-count" style="color:var(--warning-text);">${s.early}</span> <span class="ts-percentage">(${earlyPct}%)</span></td><td><span class="ts-count" style="color:var(--danger-text);">${s.late}</span> <span class="ts-percentage">(${latePct}%)</span></td></tr>`;
             });
-            document.getElementById('timeslotTableBody').innerHTML = tbodyHtml; document.getElementById('timeslotAnalytics').style.display = 'block';
+            document.getElementById('timeslotTableBody').innerHTML = tbodyHtml; 
+            document.getElementById('timeslotAnalytics').style.display = 'block';
         }
 
+        // ოპტიმიზებული DOM გადახატვა (innerHTML-ით)
         window.renderHistoryCards = function(reportsArray) {
-            const container = document.getElementById('historyListContainer'); container.innerHTML = '';
+            const container = document.getElementById('historyListContainer'); 
             if(reportsArray.length === 0) { container.innerHTML = '<p style="text-align:center; color:#6b7280;">რეპორტები ვერ მოიძებნა</p>'; return; }
 
+            let cardsHtml = '';
             reportsArray.forEach(rep => {
                 let onTime = 0, early = 0, late = 0, tol = 0;
                 rep.data.forEach(i => { if(i.status === 'დროული') onTime++; else if(i.status === 'ადრე') early++; else if(i.status === 'გვიან') late++; else if(i.status === '15წთ ცდომილება') tol++; });
-                const item = document.createElement('div'); item.className = 'history-item';
-                item.innerHTML = `
-                    <div style="width: 100%;">
-                        <div class="history-header"><div class="history-date">📅 ${rep.dateStr} <span style="font-size:14px; color:#6b7280; font-weight:normal;">(სულ: ${rep.total})</span></div>
-                        <div class="history-mini-stats"><span class="ms-badge" style="background:var(--success-bg); color:var(--success-text)">დროული: ${onTime}</span><span class="ms-badge" style="background:var(--warning-bg); color:var(--warning-text)">ადრე: ${early}</span><span class="ms-badge" style="background:var(--danger-bg); color:var(--danger-text)">გვიან: ${late}</span><span class="ms-badge" style="background:var(--tolerance-bg); color:var(--tolerance-text)">15წთ: ${tol}</span></div></div>
-                        <div class="history-actions">
-                            <input type="text" id="rep-comment-${rep.id}" class="rep-comment-input" value="${rep.reportComment || ''}" placeholder="ზოგადი კომენტარი ამ რეპორტზე...">
-                            <button class="save-btn" onclick="saveReportComment('${rep.id}', this)">✔ შენახვა</button>
-                            <div style="margin-left:auto; display:flex; gap:10px;"><button class="delete-btn" onclick="deleteReport('${rep.id}')">🗑️ წაშლა</button><button class="open-report-btn" onclick="openReportFromHistory('${rep.id}')">👁️ გახსნა</button></div>
+                
+                cardsHtml += `
+                    <div class="history-item">
+                        <div style="width: 100%;">
+                            <div class="history-header"><div class="history-date">📅 ${rep.dateStr} <span style="font-size:14px; color:#6b7280; font-weight:normal;">(სულ: ${rep.total})</span></div>
+                            <div class="history-mini-stats"><span class="ms-badge" style="background:var(--success-bg); color:var(--success-text)">დროული: ${onTime}</span><span class="ms-badge" style="background:var(--warning-bg); color:var(--warning-text)">ადრე: ${early}</span><span class="ms-badge" style="background:var(--danger-bg); color:var(--danger-text)">გვიან: ${late}</span><span class="ms-badge" style="background:var(--tolerance-bg); color:var(--tolerance-text)">15წთ: ${tol}</span></div></div>
+                            <div class="history-actions">
+                                <input type="text" id="rep-comment-${rep.id}" class="rep-comment-input" value="${rep.reportComment || ''}" placeholder="ზოგადი კომენტარი ამ რეპორტზე...">
+                                <button class="save-btn" onclick="saveReportComment('${rep.id}', this)">✔ შენახვა</button>
+                                <div style="margin-left:auto; display:flex; gap:10px;"><button class="delete-btn" onclick="deleteReport('${rep.id}')">🗑️ წაშლა</button><button class="open-report-btn" onclick="openReportFromHistory('${rep.id}')">👁️ გახსნა</button></div>
+                            </div>
                         </div>
                     </div>`;
-                container.appendChild(item);
             });
+            container.innerHTML = cardsHtml;
         }
 
         window.deleteReport = async function(id) {
@@ -605,7 +620,14 @@
             document.getElementById('val-late').innerHTML = `${((late/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${late})</span>`;
             document.getElementById('val-tolerance').innerHTML = `${((tol15/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${tol15})</span>`;
 
-            renderReasons(window.globalResults, 'rep-late-reasons-list', 'rep-ontime-reasons-list');
+            let lateCounts = {}; let ontimeCounts = {};
+            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
+            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
+            window.globalResults.forEach(item => {
+                if (item.status === 'გვიან' && item.sub_status) { lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1; }
+                if (item.status === 'დროული' && item.sub_status) { ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1; }
+            });
+            renderReasons(lateCounts, ontimeCounts, 'rep-late-reasons-list', 'rep-ontime-reasons-list');
         }
 
         function getBadgeHtml(status) {
@@ -616,6 +638,7 @@
             return `<span class="badge" style="background:#e5e7eb; color:#374151;">${status}</span>`;
         }
 
+        // ოპტიმიზებული Table Render
         window.renderTable = function() {
             const showOnTime = document.getElementById('chk-ontime').checked;
             const showEarly = document.getElementById('chk-early').checked;
@@ -635,7 +658,8 @@
                 return false;
             });
 
-            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            const tbody = document.getElementById('tableBody'); 
+            let rowsHtml = '';
             
             window.filteredResults.forEach(item => {
                 const isOverridden = item.status !== item.auto_status;
@@ -649,30 +673,32 @@
                     subStatusHtml += `</select>`;
                 }
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: 500;">${item.order_id}</td>
-                    <td>${item.courier}</td>
-                    <td>${item.req_info}</td>
-                    <td>${item.act_info}</td>
-                    <td>${getBadgeHtml(item.status)}</td>
-                    <td>
-                        <div class="controls-cell">
-                            <select class="status-select" onchange="overrideStatus('${item.order_id}', this.value)">
-                                <option value="" ${!isOverridden ? 'selected' : ''}>ავტო (${item.auto_status})</option>
-                                <option value="დროული" ${item.status === 'დროული' && isOverridden ? 'selected' : ''}>დროულად</option>
-                                <option value="ადრე" ${item.status === 'ადრე' && isOverridden ? 'selected' : ''}>ადრე</option>
-                                <option value="გვიან" ${item.status === 'გვიან' && isOverridden ? 'selected' : ''}>გვიან</option>
-                                <option value="15წთ ცდომილება" ${item.status === '15წთ ცდომილება' && isOverridden ? 'selected' : ''}>15წთ</option>
-                            </select>
-                            ${subStatusHtml}
-                            <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment || ''}" placeholder="კომენტარი..." onchange="updateTempComment('${item.order_id}', this.value)">
-                            <button class="save-btn" onclick="saveComment('${item.order_id}', this)">✔</button>
-                        </div>
-                    </td>
+                rowsHtml += `
+                    <tr>
+                        <td style="font-weight: 500;">${item.order_id}</td>
+                        <td>${item.courier}</td>
+                        <td>${item.req_info}</td>
+                        <td>${item.act_info}</td>
+                        <td>${getBadgeHtml(item.status)}</td>
+                        <td>
+                            <div class="controls-cell">
+                                <select class="status-select" onchange="overrideStatus('${item.order_id}', this.value)">
+                                    <option value="" ${!isOverridden ? 'selected' : ''}>ავტო (${item.auto_status})</option>
+                                    <option value="დროული" ${item.status === 'დროული' && isOverridden ? 'selected' : ''}>დროულად</option>
+                                    <option value="ადრე" ${item.status === 'ადრე' && isOverridden ? 'selected' : ''}>ადრე</option>
+                                    <option value="გვიან" ${item.status === 'გვიან' && isOverridden ? 'selected' : ''}>გვიან</option>
+                                    <option value="15წთ ცდომილება" ${item.status === '15წთ ცდომილება' && isOverridden ? 'selected' : ''}>15წთ</option>
+                                </select>
+                                ${subStatusHtml}
+                                <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment || ''}" placeholder="კომენტარი..." onchange="updateTempComment('${item.order_id}', this.value)">
+                                <button class="save-btn" onclick="saveComment('${item.order_id}', this)">✔</button>
+                            </div>
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
+            
+            tbody.innerHTML = rowsHtml;
         }
 
         window.updateTempComment = function(id, val) { const item = window.globalResults.find(i => String(i.order_id) === String(id)); if(item) item.comment = val; }
