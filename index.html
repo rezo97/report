@@ -116,7 +116,7 @@
         .reasons-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .reason-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; }
         .reason-box h4 { margin: 0 0 12px 0; font-size: 14px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-        .reason-item { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--border-color); }
+        .reason-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0; border-bottom: 1px dashed var(--border-color); }
         .reason-item:last-child { border-bottom: none; }
         .reason-count { font-weight: 700; background: var(--bg-color); padding: 2px 8px; border-radius: 999px; }
 
@@ -251,6 +251,7 @@
                     </div>
                     <select id="subStatusFilter" class="status-select" onchange="renderTable()" style="min-width: 150px;">
                         <option value="">ყველა მიზეზი</option>
+                        <option value="NO_REASON">მიზეზი არაქვს გაწერილი</option>
                         <optgroup label="გვიან">
                             <option value="საკურიეროს დაგვიანება">საკურიეროს დაგვიანება</option>
                             <option value="გამზადების დაგვიანება">გამზადების დაგვიანება</option>
@@ -442,7 +443,6 @@
             const container = document.getElementById('historyListContainer');
             container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
             
-            // დაცვა ღილაკის მრავალჯერ დაჭერისგან
             let originalText = "";
             if(btnElement) {
                 originalText = btnElement.innerText;
@@ -472,7 +472,6 @@
                 console.error(e); 
                 container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; 
             } finally {
-                // ვუბრუნებთ ღილაკს საწყის მდგომარეობას
                 if(btnElement) {
                     btnElement.innerText = originalText;
                     btnElement.disabled = false;
@@ -480,25 +479,61 @@
             }
         }
 
-        function renderReasons(lateCountsObj, ontimeCountsObj, lateContainerId, ontimeContainerId) {
-            let lateHtml = '';
-            Object.keys(lateCountsObj).forEach(k => { if(lateCountsObj[k] > 0) lateHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${lateCountsObj[k]}</span></div>`; });
-            document.getElementById(lateContainerId).innerHTML = lateHtml || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
+        // ახალი, გაუმჯობესებული მიზეზების რენდერის ფუნქცია
+        function renderReasonsDashboard(dataArray, lateContainerId, ontimeContainerId) {
+            let lateCounts = { "მიზეზი არაქვს გაწერილი": 0 };
+            let ontimeCounts = { "მიზეზი არაქვს გაწერილი": 0 };
+            let totalLate = 0;
+            let totalOntime = 0;
 
-            let ontimeHtml = '';
-            Object.keys(ontimeCountsObj).forEach(k => { if(ontimeCountsObj[k] > 0) ontimeHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${ontimeCountsObj[k]}</span></div>`; });
-            document.getElementById(ontimeContainerId).innerHTML = ontimeHtml || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
+            // ვაინიცირებთ ცნობილ მიზეზებს ნულებით
+            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
+            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
+
+            // ვითვლით რაოდენობებს მონაცემთა ბაზიდან
+            dataArray.forEach(item => {
+                if (item.status === 'გვიან') {
+                    totalLate++;
+                    if (item.sub_status) lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1;
+                    else lateCounts["მიზეზი არაქვს გაწერილი"]++;
+                }
+                if (item.status === 'დროული') {
+                    totalOntime++;
+                    if (item.sub_status) ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1;
+                    else ontimeCounts["მიზეზი არაქვს გაწერილი"]++;
+                }
+            });
+
+            // HTML գენერատორი პროცენტებით
+            function generateHtml(countsObj, total) {
+                let html = '';
+                Object.keys(countsObj).forEach(k => {
+                    if (countsObj[k] > 0) {
+                        let pct = total > 0 ? ((countsObj[k] / total) * 100).toFixed(1) : 0;
+                        // ცარიელი მიზეზის ვიზუალური გამოყოფა (სტაფილოსფრად)
+                        let labelStyle = k === "მიზეზი არაქვს გაწერილი" ? "color:#d97706; font-style:italic;" : "";
+                        html += `
+                            <div class="reason-item">
+                                <span style="${labelStyle}">${k}</span>
+                                <div>
+                                    <span style="font-size:12px; color:var(--text-muted); margin-right:8px;">${pct}%</span>
+                                    <span class="reason-count">${countsObj[k]}</span>
+                                </div>
+                            </div>`;
+                    }
+                });
+                return html || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
+            }
+
+            document.getElementById(lateContainerId).innerHTML = generateHtml(lateCounts, totalLate);
+            document.getElementById(ontimeContainerId).innerHTML = generateHtml(ontimeCounts, totalOntime);
         }
 
-        // სრული ოპტიმიზაცია: ყველა კალკულაცია ერთ ციკლში
         window.updateMasterDashboard = function() {
             if(window.allHistoryReports.length === 0) return;
 
             let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
-            let lateCounts = {}; let ontimeCounts = {};
-            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
-            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
-            
+            let allItems = []; // ვაგროვებთ ყველა ჩანაწერს მიზეზების ფუნქციისთვის
             let slots = {};
             const slotRegex = /\b(\d{1,2}:\d{2})(?::\d{2})?\s*-\s*(\d{1,2}:\d{2})(?::\d{2})?\b/;
 
@@ -506,14 +541,12 @@
                 if(!rep.data) return;
                 rep.data.forEach(item => {
                     mTotal++;
+                    allItems.push(item); 
                     
                     if(item.status === 'დროული') mOnTime++;
                     else if(item.status === 'ადრე') mEarly++;
                     else if(item.status === 'გვიან') mLate++;
                     else if(item.status === '15წთ ცდომილება') mTol++;
-
-                    if (item.status === 'გვიან' && item.sub_status) { lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1; }
-                    if (item.status === 'დროული' && item.sub_status) { ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1; }
 
                     let match = String(item.raw_req_info).match(slotRegex);
                     let slotName = match ? `${match[1]} - ${match[2]}` : "სხვა დრო";
@@ -536,9 +569,9 @@
             document.getElementById('masterDashboard').style.display = 'grid';
             document.getElementById('masterReasonsDashboard').style.display = 'grid';
 
-            renderReasons(lateCounts, ontimeCounts, 'm-late-reasons-list', 'm-ontime-reasons-list');
+            // ვიძახებთ მიზეზების რენდერს ისტორიისთვის
+            renderReasonsDashboard(allItems, 'm-late-reasons-list', 'm-ontime-reasons-list');
 
-            // თაიმსლოტების გადახატვა 
             let sortedKeys = Object.keys(slots).sort(); let tbodyHtml = '';
             sortedKeys.forEach(key => {
                 let s = slots[key]; let sharePct = ((s.total / mTotal) * 100).toFixed(1); let ontimePct = ((s.ontime / s.total) * 100).toFixed(1); let tolPct = ((s.tol / s.total) * 100).toFixed(1); let earlyPct = ((s.early / s.total) * 100).toFixed(1); let latePct = ((s.late / s.total) * 100).toFixed(1);
@@ -548,7 +581,6 @@
             document.getElementById('timeslotAnalytics').style.display = 'block';
         }
 
-        // ოპტიმიზებული DOM გადახატვა (innerHTML-ით)
         window.renderHistoryCards = function(reportsArray) {
             const container = document.getElementById('historyListContainer'); 
             if(reportsArray.length === 0) { container.innerHTML = '<p style="text-align:center; color:#6b7280;">რეპორტები ვერ მოიძებნა</p>'; return; }
@@ -620,14 +652,8 @@
             document.getElementById('val-late').innerHTML = `${((late/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${late})</span>`;
             document.getElementById('val-tolerance').innerHTML = `${((tol15/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${tol15})</span>`;
 
-            let lateCounts = {}; let ontimeCounts = {};
-            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
-            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
-            window.globalResults.forEach(item => {
-                if (item.status === 'გვიან' && item.sub_status) { lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1; }
-                if (item.status === 'დროული' && item.sub_status) { ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1; }
-            });
-            renderReasons(lateCounts, ontimeCounts, 'rep-late-reasons-list', 'rep-ontime-reasons-list');
+            // ვიძახებთ მიზეზების რენდერს კონკრეტული რეპორტისთვის
+            renderReasonsDashboard(window.globalResults, 'rep-late-reasons-list', 'rep-ontime-reasons-list');
         }
 
         function getBadgeHtml(status) {
@@ -638,7 +664,6 @@
             return `<span class="badge" style="background:#e5e7eb; color:#374151;">${status}</span>`;
         }
 
-        // ოპტიმიზებული Table Render
         window.renderTable = function() {
             const showOnTime = document.getElementById('chk-ontime').checked;
             const showEarly = document.getElementById('chk-early').checked;
@@ -649,7 +674,15 @@
 
             window.filteredResults = window.globalResults.filter(item => {
                 if(searchTerm && !String(item.order_id).toLowerCase().includes(searchTerm)) return false;
-                if(filterSubStatus && item.sub_status !== filterSubStatus) return false;
+                
+                // მიზეზით ფილტრაციის გაუმჯობესებული ლოგიკა (მათ შორის ცარიელი მიზეზისთვის)
+                if(filterSubStatus === "NO_REASON") {
+                    if((item.status === 'გვიან' || item.status === 'დროული') && !item.sub_status) {} // გადის ფილტრს
+                    else return false;
+                } else if(filterSubStatus && item.sub_status !== filterSubStatus) {
+                    return false;
+                }
+
                 if(item.status === 'დროული' && showOnTime) return true;
                 if(item.status === 'ადრე' && showEarly) return true;
                 if(item.status === 'გვიან' && showLate) return true;
