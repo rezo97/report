@@ -42,10 +42,10 @@
         .btn-primary:hover { background: var(--primary-hover); }
         .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
 
-        .search-container { position: relative; width: 100%; max-width: 400px; margin-bottom: 20px; }
-        .search-input { width: 100%; padding: 12px 16px 12px 40px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; box-sizing: border-box; }
+        .search-container { position: relative; width: 100%; max-width: 300px; }
+        .search-input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; transition: 0.2s; box-sizing: border-box; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
-        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px;}
 
         .history-list { display: flex; flex-direction: column; gap: 16px; }
         .history-item { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -70,9 +70,9 @@
         .btn-export { padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
         
         .table-wrapper { background: var(--card-bg); border-radius: 16px; overflow-x: auto; border: 1px solid var(--border-color); margin-bottom: 30px;}
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1000px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1100px; }
         th { background: #f9fafb; color: var(--text-muted); font-size: 12px; text-transform: uppercase; padding: 16px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10; }
-        td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        td { padding: 12px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         tr:hover { background: #f8fafc; }
 
         .badge { display: inline-flex; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
@@ -81,16 +81,24 @@
         .badge-late { background: var(--danger-bg); color: var(--danger-text); }
         .badge-tolerance { background: var(--tolerance-bg); color: var(--tolerance-text); }
 
-        .controls-cell { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .controls-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .status-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background:#fff; cursor:pointer;}
-        .comment-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 140px; outline: none; }
+        .sub-status-select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; background:#f8fafc; cursor:pointer; max-width: 140px;}
+        .comment-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 130px; outline: none; }
         .save-btn { padding: 8px 14px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s;}
-        
+
         .ts-percentage { font-size: 12px; color: var(--text-muted); font-weight: normal; margin-left: 4px; }
         .ts-count { font-weight: 700; font-size: 15px; }
 
-        /* კალენდრის ბლოკის დიზაინი */
         .date-filter-container { background: var(--card-bg); padding: 15px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        
+        /* მიზეზების დეშბორდის სტილი */
+        .reasons-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .reason-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; }
+        .reason-box h4 { margin: 0 0 12px 0; font-size: 14px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .reason-item { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--border-color); }
+        .reason-item:last-child { border-bottom: none; }
+        .reason-count { font-weight: 700; background: var(--bg-color); padding: 2px 8px; border-radius: 999px; }
     </style>
 </head>
 <body>
@@ -132,13 +140,12 @@
                 <span style="color: var(--text-muted);">-</span>
                 <input type="date" id="filterEndDate" class="search-input" style="width: auto; padding: 8px 12px;">
                 <button class="save-btn" style="background: var(--primary); color: white; border: none; padding: 10px 16px;" onclick="applyDateFilter()">გაფილტვრა</button>
-                
                 <div style="margin-left: auto;">
-                    <button class="nav-btn" style="background: #e0e7ff; color: var(--primary);" onclick="loadTotalHistory()">📊 სრული ისტორიის ჩატვირთვა</button>
+                    <button class="nav-btn" style="background: #e0e7ff; color: var(--primary);" onclick="loadTotalHistory()">📊 სრული ისტორია</button>
                 </div>
             </div>
 
-            <div class="stats-row" id="masterDashboard" style="display:none; margin-bottom: 24px;">
+            <div class="stats-row" id="masterDashboard" style="display:none; margin-bottom: 16px;">
                 <div class="stat-card"><span class="stat-title">სულ</span><span class="stat-value" id="m-val-total">0</span></div>
                 <div class="stat-card ontime"><span class="stat-title">დროული</span><span class="stat-value" id="m-val-ontime">0</span></div>
                 <div class="stat-card early"><span class="stat-title">ადრე</span><span class="stat-value" id="m-val-early">0</span></div>
@@ -146,21 +153,30 @@
                 <div class="stat-card tolerance"><span class="stat-title">15წთ ცდომილება</span><span class="stat-value" id="m-val-tolerance">0</span></div>
             </div>
 
+            <div class="reasons-dashboard" id="masterReasonsDashboard" style="display:none;">
+                <div class="reason-box">
+                    <h4>🔴 გვიან მიტანის მიზეზები</h4>
+                    <div id="m-late-reasons-list"></div>
+                </div>
+                <div class="reason-box">
+                    <h4>🟢 დროულის მიზეზები</h4>
+                    <div id="m-ontime-reasons-list"></div>
+                </div>
+            </div>
+
             <div id="timeslotAnalytics" style="display:none; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed var(--border-color);">
                 <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-main);">📊 დატვირთულობა დროის დიაპაზონების მიხედვით</h3>
                 <div class="table-wrapper" style="margin-bottom: 0; min-width: unset;">
                     <table style="min-width: 800px;">
                         <thead>
-                            <tr>
-                                <th>დიაპაზონი</th><th>ჯამური დატვირთვა</th><th>დროულად</th><th>15წთ ცდომილება</th><th>ადრე</th><th>დაგვიანება</th>
-                            </tr>
+                            <tr><th>დიაპაზონი</th><th>ჯამური დატვირთვა</th><th>დროულად</th><th>15წთ ცდომილება</th><th>ადრე</th><th>დაგვიანება</th></tr>
                         </thead>
                         <tbody id="timeslotTableBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="search-container">
+            <div class="search-container" style="max-width: 400px; margin-bottom: 20px;">
                 <span class="search-icon">🔍</span>
                 <input type="text" id="historySearchInput" class="search-input" placeholder="ძებნა შეკვეთის ნომრით..." onkeyup="filterHistory()">
             </div>
@@ -176,19 +192,46 @@
                 <button class="nav-btn" style="background: #e5e7eb; color: #1f2937;" onclick="switchTab('history')">🔙 უკან დაბრუნება</button>
             </div>
 
-            <div class="stats-row">
+            <div class="stats-row" style="margin-bottom: 16px;">
                 <div class="stat-card"><span class="stat-title">სულ</span><span class="stat-value" id="val-total">0</span></div>
                 <div class="stat-card ontime"><span class="stat-title">დროული</span><span class="stat-value" id="val-ontime">0%</span></div>
                 <div class="stat-card early"><span class="stat-title">ადრე</span><span class="stat-value" id="val-early">0%</span></div>
                 <div class="stat-card late"><span class="stat-title">გვიან</span><span class="stat-value" id="val-late">0%</span></div>
                 <div class="stat-card tolerance"><span class="stat-title">15წთ დაშვება</span><span class="stat-value" id="val-tolerance">0%</span></div>
             </div>
+
+            <div class="reasons-dashboard">
+                <div class="reason-box">
+                    <h4>🔴 გვიან მიტანის მიზეზები</h4>
+                    <div id="rep-late-reasons-list"></div>
+                </div>
+                <div class="reason-box">
+                    <h4>🟢 დროულის მიზეზები</h4>
+                    <div id="rep-ontime-reasons-list"></div>
+                </div>
+            </div>
             
             <div class="filters-section">
-                <div class="search-container" style="margin: 0; max-width: 250px;">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="tableSearchInput" class="search-input" placeholder="Order ID ძებნა..." onkeyup="renderTable()">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; flex-grow: 1;">
+                    <div class="search-container" style="margin: 0; min-width: 200px;">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="tableSearchInput" class="search-input" placeholder="Order ID ძებნა..." onkeyup="renderTable()">
+                    </div>
+                    <select id="subStatusFilter" class="status-select" onchange="renderTable()" style="min-width: 150px;">
+                        <option value="">ყველა მიზეზი</option>
+                        <optgroup label="გვიან">
+                            <option value="საკურიეროს დაგვიანება">საკურიეროს დაგვიანება</option>
+                            <option value="გამზადების დაგვიანება">გამზადების დაგვიანება</option>
+                            <option value="ფაილის დაგვიანება">ფაილის დაგვიანება</option>
+                            <option value="წუნი/ვერ მოიძებნა">წუნი/ვერ მოიძებნა</option>
+                            <option value="შემოტანის დაგვიანება">შემოტანის დაგვიანება</option>
+                        </optgroup>
+                        <optgroup label="დროული">
+                            <option value="მომხმარებელთან შეთანხმებით">მომხმარებელთან შეთანხმებით</option>
+                        </optgroup>
+                    </select>
                 </div>
+
                 <div class="filters-group">
                     <label><input type="checkbox" id="chk-ontime" checked onchange="renderTable()"> დროული</label>
                     <label><input type="checkbox" id="chk-early" checked onchange="renderTable()"> ადრე</label>
@@ -246,6 +289,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- ქვე-სტატუსების ობიექტი ---
+        const SUB_STATUSES = {
+            "გვიან": ["საკურიეროს დაგვიანება", "გამზადების დაგვიანება", "ფაილის დაგვიანება", "წუნი/ვერ მოიძებნა", "შემოტანის დაგვიანება"],
+            "დროული": ["მომხმარებელთან შეთანხმებით"]
+        };
+
         let actualData = [], requestedData = [];
         window.currentReportId = null; 
         window.globalResults = []; 
@@ -284,18 +333,11 @@
 
         function calcStatus(reqD, reqT, actD, actT) {
             try {
-                let rDateStr = String(reqD).split(' ')[0]; 
-                let aDateStr = String(actD).split(' ')[0]; 
-                
-                let rTime = new Date(rDateStr).setHours(0,0,0,0);
-                let aTime = new Date(aDateStr).setHours(0,0,0,0);
-
+                let rDateStr = String(reqD).split(' ')[0]; let aDateStr = String(actD).split(' ')[0]; 
+                let rTime = new Date(rDateStr).setHours(0,0,0,0); let aTime = new Date(aDateStr).setHours(0,0,0,0);
                 if (!isNaN(rTime) && !isNaN(aTime)) {
-                    if (aTime < rTime) return "ადრე";
-                    if (aTime > rTime) return "გვიან";
-                } else {
-                    if (rDateStr !== aDateStr) return "გვიან"; 
-                }
+                    if (aTime < rTime) return "ადრე"; if (aTime > rTime) return "გვიან";
+                } else { if (rDateStr !== aDateStr) return "გვიან"; }
 
                 let [s, e] = String(reqT).split('-');
                 let startMins = timeToMins(s.trim()), endMins = timeToMins(e.trim()), actMins = timeToMins(String(actT).trim().split(' ')[0]);
@@ -304,46 +346,30 @@
                 if (actMins < startMins && (startMins - actMins) <= 15) return "15წთ ცდომილება";
                 if (actMins > endMins && (actMins - endMins) <= 15) return "15წთ ცდომილება";
                 return actMins < startMins ? "ადრე" : "გვიან";
-            } catch { 
-                return "შეცდომა"; 
-            }
+            } catch { return "შეცდომა"; }
         }
 
         document.getElementById('processBtn').addEventListener('click', async () => {
             if(!actualData.length || !requestedData.length) { alert("გთხოვთ ატვირთოთ ორივე ფაილი."); return; }
             const btn = document.getElementById('processBtn');
-            btn.innerText = "🔍 მოწმდება ბოლო კვირის ბაზა დუბლიკატებზე...";
-            btn.disabled = true;
+            btn.innerText = "🔍 მოწმდება ბოლო კვირის ბაზა..."; btn.disabled = true;
 
             try {
                 const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
                 const q = query(collection(db, "reports"), where("timestamp", ">=", oneWeekAgo));
                 const querySnapshot = await getDocs(q);
-                
                 const existingIds = new Set();
-                querySnapshot.forEach(doc => {
-                    const rData = doc.data();
-                    if(rData.data) { rData.data.forEach(item => existingIds.add(String(item.order_id))); }
-                });
+                querySnapshot.forEach(doc => { const rData = doc.data(); if(rData.data) { rData.data.forEach(item => existingIds.add(String(item.order_id))); } });
 
-                let newRequestedData = [];
-                let duplicateCount = 0;
-                
-                requestedData.forEach(req => {
-                    if(existingIds.has(String(req.order_id))) duplicateCount++;
-                    else newRequestedData.push(req);
-                });
+                let newRequestedData = [], duplicateCount = 0;
+                requestedData.forEach(req => { if(existingIds.has(String(req.order_id))) duplicateCount++; else newRequestedData.push(req); });
 
                 if(newRequestedData.length === 0) {
-                    alert(`ატვირთული შეკვეთები უკვე ფიქსირდება ბოლო კვირის ბაზაში!\nახალი რეპორტი არ შეიქმნა.`);
-                    btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა";
-                    btn.disabled = false; return;
+                    alert(`ატვირთული შეკვეთები უკვე ფიქსირდება ბაზაში!\nახალი რეპორტი არ შეიქმნა.`);
+                    btn.innerText = "სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false; return;
                 }
-
                 btn.innerText = "⏳ ინახება Cloud-ში...";
-
-                const actualMap = new Map();
-                actualData.forEach(a => actualMap.set(String(a.order_id), a));
+                const actualMap = new Map(); actualData.forEach(a => actualMap.set(String(a.order_id), a));
 
                 let reportDataArray = [];
                 newRequestedData.forEach(req => {
@@ -354,17 +380,13 @@
                             order_id: req.order_id, courier: actual.courier || '-',
                             req_info: `<div style="font-weight:500;">${req.requested_date}</div><div style="color:#6b7280; font-size:12px;">${req.requested_time}</div>`,
                             act_info: `<div style="font-weight:500;">${actual.date}</div><div style="color:#6b7280; font-size:12px;">${actual.time}</div>`,
-                            auto_status: status, status: status, comment: '',
+                            auto_status: status, status: status, sub_status: "", comment: '', // დაემატა sub_status
                             raw_req_info: `${req.requested_date} ${req.requested_time}`, raw_act_info: `${actual.date} ${actual.time}`
                         });
                     }
                 });
 
-                if(reportDataArray.length === 0) {
-                     alert("ახალი შეკვეთებიდან ვერცერთი ვერ დაემთხვა ფაქტიურ ფაილს.");
-                     btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა";
-                     btn.disabled = false; return;
-                }
+                if(reportDataArray.length === 0) { alert("ვერცერთი დაემთხვა."); btn.innerText = "სინქრონიზაცია"; btn.disabled = false; return; }
 
                 const reportId = Date.now().toString();
                 const reportObj = {
@@ -373,15 +395,10 @@
                 };
 
                 await setDoc(doc(db, "reports", reportId), reportObj);
+                alert(`წარმატებით დაემატა ${reportDataArray.length} შეკვეთა.`);
                 
-                let successMsg = `წარმატებით დაემატა ${reportDataArray.length} ახალი შეკვეთა.`;
-                if(duplicateCount > 0) successMsg += `\nგამოტოვებულია ${duplicateCount} უკვე არსებული დუბლიკატი.`;
-                alert(successMsg);
-                
-                window.currentReportId = reportId;
-                window.globalResults = reportDataArray;
+                window.currentReportId = reportId; window.globalResults = reportDataArray;
                 document.getElementById('reportTitle').innerText = `რეპორტი: ${reportObj.dateStr}`;
-                
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
                 document.getElementById('reportView').classList.add('active');
                 
@@ -391,55 +408,29 @@
             btn.innerText = "მონაცემების სინქრონიზაცია და რეპორტის შექმნა"; btn.disabled = false;
         });
 
-        // -------------------------------------------------------------
-        // ისტორიის ჩატვირთვის ლოგიკა კალენდრით
-        // -------------------------------------------------------------
         window.loadHistory = function() {
-            // ავტომატურად ვსვამთ 1 კვირის დიაპაზონს ველებში
-            const end = new Date();
-            const start = new Date();
-            start.setDate(end.getDate() - 7);
-
+            const end = new Date(); const start = new Date(); start.setDate(end.getDate() - 7);
             document.getElementById('filterStartDate').value = start.toISOString().split('T')[0];
             document.getElementById('filterEndDate').value = end.toISOString().split('T')[0];
-
             window.fetchHistoryData('range', start.setHours(0,0,0,0), end.setHours(23,59,59,999));
         }
 
         window.applyDateFilter = function() {
-            const startVal = document.getElementById('filterStartDate').value;
-            const endVal = document.getElementById('filterEndDate').value;
-            if(!startVal || !endVal) return alert("გთხოვთ აირჩიოთ საწყისი და საბოლოო თარიღი.");
-
-            const startTS = new Date(startVal).setHours(0,0,0,0);
-            const endTS = new Date(endVal).setHours(23,59,59,999);
-
-            window.fetchHistoryData('range', startTS, endTS);
+            const startVal = document.getElementById('filterStartDate').value, endVal = document.getElementById('filterEndDate').value;
+            if(!startVal || !endVal) return alert("გთხოვთ აირჩიოთ თარიღი.");
+            window.fetchHistoryData('range', new Date(startVal).setHours(0,0,0,0), new Date(endVal).setHours(23,59,59,999));
         }
 
         window.loadTotalHistory = function() {
-            // ვასუფთავებთ კალენდრის ველებს
-            document.getElementById('filterStartDate').value = '';
-            document.getElementById('filterEndDate').value = '';
+            document.getElementById('filterStartDate').value = ''; document.getElementById('filterEndDate').value = '';
             window.fetchHistoryData('all');
         }
 
         window.fetchHistoryData = async function(mode, startTS, endTS) {
             const container = document.getElementById('historyListContainer');
             container.innerHTML = '<p style="text-align:center;">იტვირთება მონაცემები ☁️...</p>';
-            
             try {
-                let q;
-                if (mode === 'all') {
-                    q = query(collection(db, "reports"), orderBy("timestamp", "desc"));
-                } else {
-                    q = query(collection(db, "reports"), 
-                        where("timestamp", ">=", startTS), 
-                        where("timestamp", "<=", endTS), 
-                        orderBy("timestamp", "desc")
-                    );
-                }
-
+                let q = mode === 'all' ? query(collection(db, "reports"), orderBy("timestamp", "desc")) : query(collection(db, "reports"), where("timestamp", ">=", startTS), where("timestamp", "<=", endTS), orderBy("timestamp", "desc"));
                 const querySnapshot = await getDocs(q);
                 window.allHistoryReports = [];
                 querySnapshot.forEach((doc) => { window.allHistoryReports.push(doc.data()); });
@@ -447,24 +438,44 @@
                 if(window.allHistoryReports.length === 0) {
                     container.innerHTML = '<p style="text-align:center;">ამ პერიოდში ჩანაწერები არ მოიძებნა.</p>';
                     document.getElementById('masterDashboard').style.display = 'none';
+                    document.getElementById('masterReasonsDashboard').style.display = 'none';
                     document.getElementById('timeslotAnalytics').style.display = 'none';
                     return;
                 }
+                window.updateMasterDashboard(); window.renderHistoryCards(window.allHistoryReports);
+            } catch(e) { console.error(e); container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; }
+        }
 
-                window.updateMasterDashboard();
-                window.renderHistoryCards(window.allHistoryReports);
-            } catch(e) { 
-                console.error(e); 
-                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა კავშირისას.</p>'; 
-            }
+        // --- მიზეზების რენდერის ფუნქცია ---
+        function renderReasons(dataArray, lateContainerId, ontimeContainerId) {
+            let lateCounts = {}; let ontimeCounts = {};
+            
+            // ვაინიცირებთ ნულებით
+            SUB_STATUSES["გვიან"].forEach(r => lateCounts[r] = 0);
+            SUB_STATUSES["დროული"].forEach(r => ontimeCounts[r] = 0);
+
+            dataArray.forEach(item => {
+                if (item.status === 'გვიან' && item.sub_status) { lateCounts[item.sub_status] = (lateCounts[item.sub_status] || 0) + 1; }
+                if (item.status === 'დროული' && item.sub_status) { ontimeCounts[item.sub_status] = (ontimeCounts[item.sub_status] || 0) + 1; }
+            });
+
+            let lateHtml = '';
+            Object.keys(lateCounts).forEach(k => { if(lateCounts[k] > 0) lateHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${lateCounts[k]}</span></div>`; });
+            document.getElementById(lateContainerId).innerHTML = lateHtml || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
+
+            let ontimeHtml = '';
+            Object.keys(ontimeCounts).forEach(k => { if(ontimeCounts[k] > 0) ontimeHtml += `<div class="reason-item"><span>${k}</span> <span class="reason-count">${ontimeCounts[k]}</span></div>`; });
+            document.getElementById(ontimeContainerId).innerHTML = ontimeHtml || '<span style="color:#9ca3af; font-size:12px;">მონაცემი არ არის</span>';
         }
 
         window.updateMasterDashboard = function() {
             let mTotal = 0, mOnTime = 0, mEarly = 0, mLate = 0, mTol = 0;
+            let allItems = [];
             window.allHistoryReports.forEach(rData => {
                 mTotal += rData.total || 0;
                 if(rData.data) {
                     rData.data.forEach(item => {
+                        allItems.push(item);
                         if(item.status === 'დროული') mOnTime++;
                         else if(item.status === 'ადრე') mEarly++;
                         else if(item.status === 'გვიან') mLate++;
@@ -473,163 +484,102 @@
                 }
             });
 
-            if(window.allHistoryReports.length === 0) {
-                document.getElementById('masterDashboard').style.display = 'none';
-                document.getElementById('timeslotAnalytics').style.display = 'none';
-                return;
-            }
+            if(window.allHistoryReports.length === 0) return;
 
             document.getElementById('m-val-total').innerText = mTotal;
             document.getElementById('m-val-ontime').innerText = `${mOnTime} (${mTotal ? ((mOnTime/mTotal)*100).toFixed(1) : 0}%)`;
             document.getElementById('m-val-early').innerText = `${mEarly} (${mTotal ? ((mEarly/mTotal)*100).toFixed(1) : 0}%)`;
             document.getElementById('m-val-late').innerText = `${mLate} (${mTotal ? ((mLate/mTotal)*100).toFixed(1) : 0}%)`;
             document.getElementById('m-val-tolerance').innerText = `${mTol} (${mTotal ? ((mTol/mTotal)*100).toFixed(1) : 0}%)`;
+            
             document.getElementById('masterDashboard').style.display = 'grid';
+            document.getElementById('masterReasonsDashboard').style.display = 'grid';
 
+            renderReasons(allItems, 'm-late-reasons-list', 'm-ontime-reasons-list');
             window.renderTimeslotsAnalytics();
         }
 
         window.renderTimeslotsAnalytics = function() {
-            let slots = {};
-            let totalOrders = 0;
-
+            let slots = {}; let totalOrders = 0;
             window.allHistoryReports.forEach(rep => {
                 if(!rep.data) return;
                 rep.data.forEach(item => {
                     totalOrders++;
                     let match = String(item.raw_req_info).match(/\b(\d{1,2}:\d{2})(?::\d{2})?\s*-\s*(\d{1,2}:\d{2})(?::\d{2})?\b/);
                     let slotName = match ? `${match[1]} - ${match[2]}` : "სხვა დრო";
-                    
                     if(!slots[slotName]) slots[slotName] = { total: 0, ontime: 0, early: 0, late: 0, tol: 0 };
-                    
                     slots[slotName].total++;
-                    if(item.status === 'დროული') slots[slotName].ontime++;
-                    else if(item.status === 'ადრე') slots[slotName].early++;
-                    else if(item.status === 'გვიან') slots[slotName].late++;
-                    else if(item.status === '15წთ ცდომილება') slots[slotName].tol++;
+                    if(item.status === 'დროული') slots[slotName].ontime++; else if(item.status === 'ადრე') slots[slotName].early++; else if(item.status === 'გვიან') slots[slotName].late++; else if(item.status === '15წთ ცდომილება') slots[slotName].tol++;
                 });
             });
 
             if(totalOrders === 0) { document.getElementById('timeslotAnalytics').style.display = 'none'; return; }
 
-            let sortedKeys = Object.keys(slots).sort();
-            let tbodyHtml = '';
-
+            let sortedKeys = Object.keys(slots).sort(); let tbodyHtml = '';
             sortedKeys.forEach(key => {
-                let s = slots[key];
-                let sharePct = ((s.total / totalOrders) * 100).toFixed(1);
-                let ontimePct = ((s.ontime / s.total) * 100).toFixed(1);
-                let tolPct = ((s.tol / s.total) * 100).toFixed(1);
-                let earlyPct = ((s.early / s.total) * 100).toFixed(1);
-                let latePct = ((s.late / s.total) * 100).toFixed(1);
-
-                tbodyHtml += `
-                    <tr>
-                        <td style="font-weight:700; color:var(--primary); font-size:15px;">${key}</td>
-                        <td><span class="ts-count">${s.total}</span> <span class="ts-percentage">(${sharePct}%)</span></td>
-                        <td><span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> <span class="ts-percentage">(${ontimePct}%)</span></td>
-                        <td><span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> <span class="ts-percentage">(${tolPct}%)</span></td>
-                        <td><span class="ts-count" style="color:var(--warning-text);">${s.early}</span> <span class="ts-percentage">(${earlyPct}%)</span></td>
-                        <td><span class="ts-count" style="color:var(--danger-text);">${s.late}</span> <span class="ts-percentage">(${latePct}%)</span></td>
-                    </tr>
-                `;
+                let s = slots[key]; let sharePct = ((s.total / totalOrders) * 100).toFixed(1); let ontimePct = ((s.ontime / s.total) * 100).toFixed(1); let tolPct = ((s.tol / s.total) * 100).toFixed(1); let earlyPct = ((s.early / s.total) * 100).toFixed(1); let latePct = ((s.late / s.total) * 100).toFixed(1);
+                tbodyHtml += `<tr><td style="font-weight:700; color:var(--primary); font-size:15px;">${key}</td><td><span class="ts-count">${s.total}</span> <span class="ts-percentage">(${sharePct}% წილი)</span></td><td><span class="ts-count" style="color:var(--success-text);">${s.ontime}</span> <span class="ts-percentage">(${ontimePct}%)</span></td><td><span class="ts-count" style="color:var(--tolerance-text);">${s.tol}</span> <span class="ts-percentage">(${tolPct}%)</span></td><td><span class="ts-count" style="color:var(--warning-text);">${s.early}</span> <span class="ts-percentage">(${earlyPct}%)</span></td><td><span class="ts-count" style="color:var(--danger-text);">${s.late}</span> <span class="ts-percentage">(${latePct}%)</span></td></tr>`;
             });
-
-            document.getElementById('timeslotTableBody').innerHTML = tbodyHtml;
-            document.getElementById('timeslotAnalytics').style.display = 'block';
+            document.getElementById('timeslotTableBody').innerHTML = tbodyHtml; document.getElementById('timeslotAnalytics').style.display = 'block';
         }
 
         window.renderHistoryCards = function(reportsArray) {
-            const container = document.getElementById('historyListContainer');
-            container.innerHTML = '';
-            
+            const container = document.getElementById('historyListContainer'); container.innerHTML = '';
             if(reportsArray.length === 0) { container.innerHTML = '<p style="text-align:center; color:#6b7280;">რეპორტები ვერ მოიძებნა</p>'; return; }
 
             reportsArray.forEach(rep => {
                 let onTime = 0, early = 0, late = 0, tol = 0;
-                rep.data.forEach(i => {
-                    if(i.status === 'დროული') onTime++;
-                    else if(i.status === 'ადრე') early++;
-                    else if(i.status === 'გვიან') late++;
-                    else if(i.status === '15წთ ცდომილება') tol++;
-                });
-
-                const item = document.createElement('div');
-                item.className = 'history-item';
+                rep.data.forEach(i => { if(i.status === 'დროული') onTime++; else if(i.status === 'ადრე') early++; else if(i.status === 'გვიან') late++; else if(i.status === '15წთ ცდომილება') tol++; });
+                const item = document.createElement('div'); item.className = 'history-item';
                 item.innerHTML = `
                     <div style="width: 100%;">
-                        <div class="history-header">
-                            <div class="history-date">📅 ${rep.dateStr} <span style="font-size:14px; color:#6b7280; font-weight:normal;">(სულ: ${rep.total})</span></div>
-                            <div class="history-mini-stats">
-                                <span class="ms-badge" style="background:var(--success-bg); color:var(--success-text)">დროული: ${onTime}</span>
-                                <span class="ms-badge" style="background:var(--warning-bg); color:var(--warning-text)">ადრე: ${early}</span>
-                                <span class="ms-badge" style="background:var(--danger-bg); color:var(--danger-text)">გვიან: ${late}</span>
-                                <span class="ms-badge" style="background:var(--tolerance-bg); color:var(--tolerance-text)">15წთ: ${tol}</span>
-                            </div>
-                        </div>
+                        <div class="history-header"><div class="history-date">📅 ${rep.dateStr} <span style="font-size:14px; color:#6b7280; font-weight:normal;">(სულ: ${rep.total})</span></div>
+                        <div class="history-mini-stats"><span class="ms-badge" style="background:var(--success-bg); color:var(--success-text)">დროული: ${onTime}</span><span class="ms-badge" style="background:var(--warning-bg); color:var(--warning-text)">ადრე: ${early}</span><span class="ms-badge" style="background:var(--danger-bg); color:var(--danger-text)">გვიან: ${late}</span><span class="ms-badge" style="background:var(--tolerance-bg); color:var(--tolerance-text)">15წთ: ${tol}</span></div></div>
                         <div class="history-actions">
                             <input type="text" id="rep-comment-${rep.id}" class="rep-comment-input" value="${rep.reportComment || ''}" placeholder="ზოგადი კომენტარი ამ რეპორტზე...">
                             <button class="save-btn" onclick="saveReportComment('${rep.id}', this)">✔ შენახვა</button>
-                            <div style="margin-left:auto; display:flex; gap:10px;">
-                                <button class="delete-btn" onclick="deleteReport('${rep.id}')">🗑️ წაშლა</button>
-                                <button class="open-report-btn" onclick="openReportFromHistory('${rep.id}')">👁️ გახსნა</button>
-                            </div>
+                            <div style="margin-left:auto; display:flex; gap:10px;"><button class="delete-btn" onclick="deleteReport('${rep.id}')">🗑️ წაშლა</button><button class="open-report-btn" onclick="openReportFromHistory('${rep.id}')">👁️ გახსნა</button></div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 container.appendChild(item);
             });
         }
 
         window.deleteReport = async function(id) {
-            if(!confirm("ნამდვილად გსურთ ამ რეპორტის წაშლა?\nმონაცემები ვეღარ აღდგება!")) return;
-            try {
-                await deleteDoc(doc(db, "reports", id));
-                window.allHistoryReports = window.allHistoryReports.filter(r => r.id !== id);
-                window.filterHistory(); window.updateMasterDashboard();
-            } catch (e) { console.error("Delete Error:", e); alert("წაშლისას დაფიქსირდა შეცდომა."); }
+            if(!confirm("ნამდვილად გსურთ წაშლა?")) return;
+            try { await deleteDoc(doc(db, "reports", id)); window.allHistoryReports = window.allHistoryReports.filter(r => r.id !== id); window.filterHistory(); window.updateMasterDashboard(); } catch (e) { alert("შეცდომა."); }
         }
 
         window.filterHistory = function() {
             const searchTerm = document.getElementById('historySearchInput').value.toLowerCase().trim();
             if(!searchTerm) { window.renderHistoryCards(window.allHistoryReports); return; }
-            const filtered = window.allHistoryReports.filter(rep => {
-                return rep.data.some(order => String(order.order_id).toLowerCase().includes(searchTerm));
-            });
+            const filtered = window.allHistoryReports.filter(rep => { return rep.data.some(order => String(order.order_id).toLowerCase().includes(searchTerm)); });
             window.renderHistoryCards(filtered);
         }
 
         window.saveReportComment = async function(id, btnElement) {
-            const val = document.getElementById('rep-comment-' + id).value;
-            const originalText = btnElement.innerText;
-            btnElement.innerText = "⏳...";
+            const val = document.getElementById('rep-comment-' + id).value; const originalText = btnElement.innerText; btnElement.innerText = "⏳...";
             try {
                 await updateDoc(doc(db, "reports", id), { reportComment: val });
-                const rIndex = window.allHistoryReports.findIndex(r => r.id === id);
-                if(rIndex > -1) window.allHistoryReports[rIndex].reportComment = val;
-                btnElement.innerText = "✔ ინახება"; btnElement.style.background = "#d1fae5"; btnElement.style.borderColor = "#10b981"; btnElement.style.color = "#065f46";
-            } catch (e) { console.error(e); btnElement.innerText = "❌ შეცდომა"; }
-            setTimeout(() => { btnElement.innerText = originalText; btnElement.style.background = ""; btnElement.style.borderColor = ""; btnElement.style.color = ""; }, 1500);
+                const rIndex = window.allHistoryReports.findIndex(r => r.id === id); if(rIndex > -1) window.allHistoryReports[rIndex].reportComment = val;
+                btnElement.innerText = "✔"; btnElement.style.background = "#d1fae5"; btnElement.style.color = "#065f46";
+            } catch (e) { btnElement.innerText = "❌"; }
+            setTimeout(() => { btnElement.innerText = originalText; btnElement.style.background = ""; btnElement.style.color = ""; }, 1500);
         }
 
         window.openReportFromHistory = function(reportId) {
-            const reportObj = window.allHistoryReports.find(r => r.id === reportId);
-            if(!reportObj) return;
-
-            window.currentReportId = reportObj.id;
-            window.globalResults = reportObj.data;
+            const reportObj = window.allHistoryReports.find(r => r.id === reportId); if(!reportObj) return;
+            window.currentReportId = reportObj.id; window.globalResults = reportObj.data;
             document.getElementById('reportTitle').innerText = `რეპორტი: ${reportObj.dateStr}`;
             document.getElementById('tableSearchInput').value = '';
-            
+            document.getElementById('subStatusFilter').value = '';
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById('reportView').classList.add('active');
-            
             window.updateDashboard(); window.renderTable();
         }
 
         window.updateDashboard = function() {
-            const total = window.globalResults.length;
-            if(total === 0) return;
+            const total = window.globalResults.length; if(total === 0) return;
             const onTime = window.globalResults.filter(i => i.status === 'დროული').length;
             const early = window.globalResults.filter(i => i.status === 'ადრე').length;
             const late = window.globalResults.filter(i => i.status === 'გვიან').length;
@@ -640,6 +590,8 @@
             document.getElementById('val-early').innerHTML = `${((early/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${early})</span>`;
             document.getElementById('val-late').innerHTML = `${((late/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${late})</span>`;
             document.getElementById('val-tolerance').innerHTML = `${((tol15/total)*100).toFixed(1)}% <span style="font-size:13px; color:#6b7280; font-weight:normal;">(${tol15})</span>`;
+
+            renderReasons(window.globalResults, 'rep-late-reasons-list', 'rep-ontime-reasons-list');
         }
 
         function getBadgeHtml(status) {
@@ -656,9 +608,14 @@
             const showLate = document.getElementById('chk-late').checked;
             const show15min = document.getElementById('chk-15min').checked;
             const searchTerm = document.getElementById('tableSearchInput').value.toLowerCase().trim();
+            const filterSubStatus = document.getElementById('subStatusFilter').value;
 
             window.filteredResults = window.globalResults.filter(item => {
                 if(searchTerm && !String(item.order_id).toLowerCase().includes(searchTerm)) return false;
+                
+                // მიზეზის ფილტრაცია
+                if(filterSubStatus && item.sub_status !== filterSubStatus) return false;
+
                 if(item.status === 'დროული' && showOnTime) return true;
                 if(item.status === 'ადრე' && showEarly) return true;
                 if(item.status === 'გვიან' && showLate) return true;
@@ -667,11 +624,22 @@
                 return false;
             });
 
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
             
             window.filteredResults.forEach(item => {
                 const isOverridden = item.status !== item.auto_status;
+                
+                // ქვე-სტატუსის HTML გენერაცია
+                let subStatusHtml = '';
+                if (SUB_STATUSES[item.status]) {
+                    subStatusHtml = `<select class="sub-status-select" onchange="overrideSubStatus('${item.order_id}', this.value)">
+                        <option value="">აირჩიე მიზეზი...</option>`;
+                    SUB_STATUSES[item.status].forEach(sub => {
+                        subStatusHtml += `<option value="${sub}" ${item.sub_status === sub ? 'selected' : ''}>${sub}</option>`;
+                    });
+                    subStatusHtml += `</select>`;
+                }
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight: 500;">${item.order_id}</td>
@@ -682,13 +650,14 @@
                     <td>
                         <div class="controls-cell">
                             <select class="status-select" onchange="overrideStatus('${item.order_id}', this.value)">
-                                <option value="" ${!isOverridden ? 'selected' : ''}>ავტომატური</option>
+                                <option value="" ${!isOverridden ? 'selected' : ''}>ავტო (${item.auto_status})</option>
                                 <option value="დროული" ${item.status === 'დროული' && isOverridden ? 'selected' : ''}>დროულად</option>
                                 <option value="ადრე" ${item.status === 'ადრე' && isOverridden ? 'selected' : ''}>ადრე</option>
                                 <option value="გვიან" ${item.status === 'გვიან' && isOverridden ? 'selected' : ''}>გვიან</option>
                                 <option value="15წთ ცდომილება" ${item.status === '15წთ ცდომილება' && isOverridden ? 'selected' : ''}>15წთ</option>
                             </select>
-                            <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment}" placeholder="კომენტარი..." onchange="updateTempComment('${item.order_id}', this.value)">
+                            ${subStatusHtml}
+                            <input type="text" id="c-${item.order_id}" class="comment-input" value="${item.comment || ''}" placeholder="კომენტარი..." onchange="updateTempComment('${item.order_id}', this.value)">
                             <button class="save-btn" onclick="saveComment('${item.order_id}', this)">✔</button>
                         </div>
                     </td>
@@ -697,52 +666,47 @@
             });
         }
 
-        window.updateTempComment = function(id, val) {
-            const item = window.globalResults.find(i => String(i.order_id) === String(id));
-            if(item) item.comment = val;
-        }
+        window.updateTempComment = function(id, val) { const item = window.globalResults.find(i => String(i.order_id) === String(id)); if(item) item.comment = val; }
 
         async function updateCloudReport() {
             if(!window.currentReportId) return;
-            try { await updateDoc(doc(db, "reports", window.currentReportId), { data: window.globalResults }); } 
-            catch (error) { console.error("Update Error:", error); }
+            try { await updateDoc(doc(db, "reports", window.currentReportId), { data: window.globalResults }); } catch (error) { console.error("Update Error"); }
         }
 
         window.overrideStatus = async function(id, newStatus) {
             const item = window.globalResults.find(i => String(i.order_id) === String(id));
             if(item) {
-                item.status = newStatus === "" ? item.auto_status : newStatus;
-                window.updateDashboard(); window.renderTable();
+                let resolvedStatus = newStatus === "" ? item.auto_status : newStatus;
+                if(item.status !== resolvedStatus) {
+                    item.status = resolvedStatus;
+                    item.sub_status = ""; // ვასუფთავებთ მიზეზს სტატუსის შეცვლისას
+                }
+                window.updateDashboard(); window.renderTable(); await updateCloudReport(); 
+            }
+        }
+
+        // ახალი: ქვე-სტატუსის შეცვლის ფუნქცია
+        window.overrideSubStatus = async function(id, newSubStatus) {
+            const item = window.globalResults.find(i => String(i.order_id) === String(id));
+            if(item) {
+                item.sub_status = newSubStatus;
+                window.updateDashboard(); // ვაახლებთ რიცხვებს დეშბორდზე
                 await updateCloudReport(); 
             }
         }
 
         window.saveComment = async function(id, btnElement) {
-            const val = document.getElementById('c-' + id).value;
-            window.updateTempComment(id, val);
-            const originalText = btnElement.innerText;
-            btnElement.innerText = "⏳";
-            
+            const val = document.getElementById('c-' + id).value; window.updateTempComment(id, val);
+            const originalText = btnElement.innerText; btnElement.innerText = "⏳";
             await updateCloudReport(); 
-            
-            btnElement.innerText = "✔";
-            btnElement.style.background = "#d1fae5";
-            btnElement.style.borderColor = "#10b981";
-            btnElement.style.color = "#065f46";
-
-            setTimeout(() => {
-                btnElement.innerText = originalText;
-                btnElement.style.background = "";
-                btnElement.style.borderColor = "";
-                btnElement.style.color = "";
-            }, 1000);
+            btnElement.innerText = "✔"; btnElement.style.background = "#d1fae5"; btnElement.style.color = "#065f46";
+            setTimeout(() => { btnElement.innerText = originalText; btnElement.style.background = ""; btnElement.style.color = ""; }, 1000);
         }
 
         window.exportExcel = function() {
             if(window.filteredResults.length === 0) return alert("მონაცემები არაა საჩვენებლად!");
-            const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი", "ფაქტიური", "სტატუსი", "კომენტარი"]];
-            window.filteredResults.forEach(item => wsData.push([item.order_id, item.courier, item.raw_req_info, item.raw_act_info, item.status, item.comment]));
-            
+            const wsData = [["შეკვეთის #", "კურიერი", "მოთხოვნილი", "ფაქტიური", "სტატუსი", "მიზეზი", "კომენტარი"]];
+            window.filteredResults.forEach(item => wsData.push([item.order_id, item.courier, item.raw_req_info, item.raw_act_info, item.status, item.sub_status || '-', item.comment || '-']));
             const ws = window.XLSX.utils.aoa_to_sheet(wsData);
             const wb = window.XLSX.utils.book_new();
             window.XLSX.utils.book_append_sheet(wb, ws, "შედეგები");
