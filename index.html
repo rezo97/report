@@ -290,8 +290,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         
-        // აქ შევცვალეთ getDocs -> getDocsFromServer-ით! 
-        import { getFirestore, collection, doc, setDoc, getDocsFromServer, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // საბოლოო ფიქსი: აქ შემოვიტანეთ როგორც getDocsFromServer, ისე initializeFirestore
+        import { initializeFirestore, collection, doc, setDoc, getDocs, getDocsFromServer, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
@@ -303,7 +303,11 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        
+        // ვაიძულებთ სისტემას გამოიყენოს სტანდარტული კავშირი (Long Polling), რათა არცერთმა ანტივირუსმა აღარ დაბლოკოს
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true
+        });
 
         const SUB_STATUSES = {
             "გვიან": ["საკურიეროს დაგვიანება", "გამზადების დაგვიანება", "ფაილის დაგვიანება", "წუნი/ვერ მოიძებნა", "შემოტანის დაგვიანება"],
@@ -373,8 +377,8 @@
                 const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
                 const q = query(collection(db, "reports"), where("timestamp", ">=", oneWeekAgo));
                 
-                // აქაც ვიყენებთ getDocsFromServer-ს
-                const querySnapshot = await getDocsFromServer(q);
+                // აქ ვიყენებთ getDocs-ს
+                const querySnapshot = await getDocs(q);
                 const existingIds = new Set();
                 querySnapshot.forEach(doc => { const rData = doc.data(); if(rData.data) { rData.data.forEach(item => existingIds.add(String(item.order_id))); } });
 
@@ -459,7 +463,7 @@
                     ? query(collection(db, "reports"), orderBy("timestamp", "desc")) 
                     : query(collection(db, "reports"), where("timestamp", ">=", startTS), where("timestamp", "<=", endTS), orderBy("timestamp", "desc"));
                 
-                // ვიყენებთ getDocsFromServer-ს ლოკალური "გაჭედილი" ქეშის ასარიდებლად
+                // აქ ვიყენებთ getDocsFromServer-ს ლოკალური "გაჭედილი" ქეშის ასარიდებლად
                 const querySnapshot = await getDocsFromServer(q);
                 window.allHistoryReports = [];
                 
@@ -476,7 +480,6 @@
                 }
             } catch(e) { 
                 console.error("Fetch Error: ", e); 
-                // თუ სერვერიდან წამოღებაზე ერორია, ეკრანზე წითლად გამოჩნდება
                 container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა მონაცემების წამოღებისას. დეტალები იხილეთ კონსოლში.</p>'; 
             } finally {
                 if(btnElement) {
