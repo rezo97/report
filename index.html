@@ -290,8 +290,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         
-        // მნიშვნელოვანი ცვლილება: შევცვალეთ getFirestore -> initializeFirestore რათა გამოვიყენოთ Long Polling
-        import { initializeFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // აქ შევცვალეთ getDocs -> getDocsFromServer-ით! 
+        import { getFirestore, collection, doc, setDoc, getDocsFromServer, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCo2anHoZzMoHscVO4lfr9laru0f8HokCw",
@@ -303,11 +303,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        
-        // ვაიძულებთ სისტემას გამოიყენოს სტანდარტული კავშირი (Long Polling), რათა ანტივირუსმა/ედბლოკერმა არ დაბლოკოს "WebChannel"
-        const db = initializeFirestore(app, {
-            experimentalForceLongPolling: true
-        });
+        const db = getFirestore(app);
 
         const SUB_STATUSES = {
             "გვიან": ["საკურიეროს დაგვიანება", "გამზადების დაგვიანება", "ფაილის დაგვიანება", "წუნი/ვერ მოიძებნა", "შემოტანის დაგვიანება"],
@@ -376,7 +372,9 @@
             try {
                 const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
                 const q = query(collection(db, "reports"), where("timestamp", ">=", oneWeekAgo));
-                const querySnapshot = await getDocs(q);
+                
+                // აქაც ვიყენებთ getDocsFromServer-ს
+                const querySnapshot = await getDocsFromServer(q);
                 const existingIds = new Set();
                 querySnapshot.forEach(doc => { const rData = doc.data(); if(rData.data) { rData.data.forEach(item => existingIds.add(String(item.order_id))); } });
 
@@ -461,8 +459,10 @@
                     ? query(collection(db, "reports"), orderBy("timestamp", "desc")) 
                     : query(collection(db, "reports"), where("timestamp", ">=", startTS), where("timestamp", "<=", endTS), orderBy("timestamp", "desc"));
                 
-                const querySnapshot = await getDocs(q);
+                // ვიყენებთ getDocsFromServer-ს ლოკალური "გაჭედილი" ქეშის ასარიდებლად
+                const querySnapshot = await getDocsFromServer(q);
                 window.allHistoryReports = [];
+                
                 querySnapshot.forEach((doc) => { window.allHistoryReports.push(doc.data()); });
 
                 if(window.allHistoryReports.length === 0) {
@@ -475,8 +475,9 @@
                     window.renderHistoryCards(window.allHistoryReports);
                 }
             } catch(e) { 
-                console.error(e); 
-                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა მონაცემების წამოღებისას. დარწმუნდით რომ ანტივირუსი არ ბლოკავს საიტს.</p>'; 
+                console.error("Fetch Error: ", e); 
+                // თუ სერვერიდან წამოღებაზე ერორია, ეკრანზე წითლად გამოჩნდება
+                container.innerHTML = '<p style="color:red; text-align:center;">შეცდომა მონაცემების წამოღებისას. დეტალები იხილეთ კონსოლში.</p>'; 
             } finally {
                 if(btnElement) {
                     btnElement.innerText = originalText;
